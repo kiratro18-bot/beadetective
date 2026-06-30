@@ -1,0 +1,1072 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    />
+    <title>The Velvet Curtain Case</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500&family=Special+Elite&family=Inter:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --paper: #ede3d0;
+        --paper-dark: #e0d3b8;
+        --ink: #1c1812;
+        --ink-soft: #3a332a;
+        --brass: #a8823c;
+        --blood: #8b2c2c;
+        --smoke: #6b6458;
+        --folder: #c9a876;
+      }
+
+      body {
+        background: var(--ink);
+        background-image:
+          radial-gradient(
+            ellipse at 30% 20%,
+            rgba(168, 130, 60, 0.06) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            ellipse at 70% 80%,
+            rgba(139, 44, 44, 0.05) 0%,
+            transparent 50%
+          );
+        min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        color: var(--paper);
+        overflow-x: hidden;
+      }
+
+      /* ── Desk lamp vignette ── */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 80% 60% at 50% 0%,
+          rgba(168, 130, 60, 0.08) 0%,
+          transparent 60%
+        );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      #app {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 24px 80px;
+      }
+
+      #back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "Special Elite", monospace;
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--brass);
+        text-decoration: none;
+        margin-bottom: 24px;
+        opacity: 0.85;
+        transition:
+          opacity 0.15s,
+          transform 0.15s;
+      }
+      #back-link:hover {
+        opacity: 1;
+        transform: translateX(-3px);
+      }
+
+      /* ── Header ── */
+      #case-header {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+      #case-label {
+        font-family: "Special Elite", monospace;
+        font-size: 11px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 8px;
+      }
+      h1 {
+        font-family: "Playfair Display", serif;
+        font-weight: 900;
+        font-size: clamp(32px, 6vw, 56px);
+        color: var(--paper);
+        letter-spacing: 0.01em;
+        line-height: 1.05;
+      }
+      #case-sub {
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+        font-weight: 500;
+        font-size: 15px;
+        color: var(--smoke);
+        margin-top: 6px;
+      }
+
+      /* ── Briefing screen ── */
+      .screen {
+        display: none;
+      }
+      .screen.active {
+        display: block;
+      }
+
+      #briefing {
+        max-width: 680px;
+        margin: 0 auto;
+        background: var(--paper);
+        color: var(--ink);
+        border-radius: 2px;
+        padding: 40px 44px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        position: relative;
+      }
+      #briefing::before {
+        content: "CASE FILE";
+        position: absolute;
+        top: 20px;
+        right: 24px;
+        font-family: "Special Elite", monospace;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: var(--blood);
+        border: 1.5px solid var(--blood);
+        padding: 3px 10px;
+        transform: rotate(4deg);
+        opacity: 0.7;
+      }
+      #briefing h2 {
+        font-family: "Playfair Display", serif;
+        font-weight: 700;
+        font-size: 24px;
+        margin-bottom: 18px;
+        color: var(--ink);
+      }
+      #briefing p {
+        font-family: "Special Elite", monospace;
+        font-size: 14px;
+        line-height: 1.85;
+        color: var(--ink-soft);
+        margin-bottom: 16px;
+      }
+      #briefing .signature {
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+        text-align: right;
+        color: var(--smoke);
+        font-size: 14px;
+        margin-top: 24px;
+      }
+      .begin-btn {
+        display: block;
+        margin: 32px auto 0;
+        font-family: "Special Elite", monospace;
+        font-size: 13px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        background: var(--ink);
+        color: var(--paper);
+        border: none;
+        padding: 14px 38px;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.15s;
+      }
+      .begin-btn:hover {
+        background: var(--blood);
+        transform: translateY(-2px);
+      }
+
+      /* ── Main interrogation layout ── */
+      #main-layout {
+        display: grid;
+        grid-template-columns: 240px 1fr 280px;
+        gap: 24px;
+        align-items: start;
+      }
+      @media (max-width: 900px) {
+        #main-layout {
+          grid-template-columns: 1fr;
+        }
+        #suspect-list {
+          order: 1;
+        }
+        #dialogue-panel {
+          order: 2;
+        }
+        #notebook {
+          order: 3;
+        }
+      }
+
+      /* ── Suspect list (left) ── */
+      #suspect-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .panel-label {
+        font-family: "Special Elite", monospace;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 4px;
+      }
+      .suspect-card {
+        background: var(--paper);
+        color: var(--ink);
+        padding: 14px 16px;
+        cursor: pointer;
+        border-left: 4px solid transparent;
+        transition:
+          transform 0.15s,
+          border-color 0.2s;
+        position: relative;
+      }
+      .suspect-card:hover {
+        transform: translateX(4px);
+      }
+      .suspect-card.selected {
+        border-left-color: var(--blood);
+        background: var(--paper-dark);
+      }
+      .suspect-card.accused {
+        opacity: 0.45;
+      }
+      .suspect-name {
+        font-family: "Playfair Display", serif;
+        font-weight: 700;
+        font-size: 16px;
+      }
+      .suspect-role {
+        font-family: "Special Elite", monospace;
+        font-size: 11px;
+        color: var(--smoke);
+        margin-top: 2px;
+      }
+      .suspect-asked-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 10px;
+        color: var(--brass);
+        font-family: "Special Elite", monospace;
+      }
+
+      /* ── Dialogue panel (center) ── */
+      #dialogue-panel {
+        background: var(--paper);
+        color: var(--ink);
+        min-height: 480px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4);
+      }
+      #suspect-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 24px 28px;
+        border-bottom: 2px solid var(--ink);
+      }
+      #suspect-portrait {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--ink);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Playfair Display", serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--paper);
+        flex-shrink: 0;
+      }
+      #suspect-header-text h3 {
+        font-family: "Playfair Display", serif;
+        font-size: 22px;
+        font-weight: 700;
+      }
+      #suspect-header-text p {
+        font-family: "Special Elite", monospace;
+        font-size: 12px;
+        color: var(--smoke);
+        margin-top: 2px;
+      }
+
+      #dialogue-body {
+        flex: 1;
+        padding: 24px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        overflow-y: auto;
+        max-height: 340px;
+      }
+      .dialogue-line {
+        display: flex;
+        gap: 12px;
+        animation: fadeIn 0.35s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .dialogue-line.player .bubble {
+        background: var(--ink);
+        color: var(--paper);
+        margin-left: auto;
+      }
+      .dialogue-line.player {
+        justify-content: flex-end;
+      }
+      .bubble {
+        font-family: "Special Elite", monospace;
+        font-size: 13.5px;
+        line-height: 1.6;
+        background: var(--paper-dark);
+        padding: 12px 16px;
+        max-width: 80%;
+        position: relative;
+      }
+      .bubble.contradiction-flag {
+        border-left: 3px solid var(--blood);
+      }
+
+      #empty-dialogue {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+        color: var(--smoke);
+        font-size: 15px;
+        text-align: center;
+        padding: 40px;
+      }
+
+      /* Questions */
+      #questions {
+        padding: 18px 28px 24px;
+        border-top: 1px solid rgba(28, 24, 18, 0.12);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .q-btn {
+        font-family: "Inter", sans-serif;
+        font-size: 13.5px;
+        font-weight: 500;
+        text-align: left;
+        background: none;
+        border: 1.5px solid rgba(28, 24, 18, 0.18);
+        color: var(--ink);
+        padding: 11px 16px;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+      }
+      .q-btn:hover {
+        background: rgba(28, 24, 18, 0.05);
+        border-color: var(--ink);
+      }
+      .q-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .q-btn:disabled:hover {
+        background: none;
+      }
+
+      /* ── Notebook (right) ── */
+      #notebook {
+        background: #2a241c;
+        padding: 20px;
+        position: sticky;
+        top: 20px;
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4);
+      }
+      #notebook .panel-label {
+        color: var(--brass);
+        margin-bottom: 12px;
+      }
+      #clue-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 60px;
+      }
+      .clue-empty {
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+        font-size: 12.5px;
+        color: var(--smoke);
+        line-height: 1.5;
+      }
+      .clue-card {
+        background: var(--paper);
+        color: var(--ink);
+        padding: 10px 12px;
+        font-family: "Special Elite", monospace;
+        font-size: 11.5px;
+        line-height: 1.5;
+        position: relative;
+        animation: fadeIn 0.4s ease;
+      }
+      .clue-card.contradiction {
+        background: #f3e5e0;
+      }
+      .clue-stamp {
+        position: absolute;
+        top: -8px;
+        right: -6px;
+        background: var(--blood);
+        color: #fff;
+        font-family: "Special Elite", monospace;
+        font-size: 8px;
+        letter-spacing: 0.1em;
+        padding: 3px 7px;
+        transform: rotate(8deg);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      #accuse-section {
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(237, 227, 208, 0.15);
+      }
+      #accuse-btn {
+        width: 100%;
+        font-family: "Special Elite", monospace;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        background: var(--blood);
+        color: #fff;
+        border: none;
+        padding: 13px;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.15s;
+      }
+      #accuse-btn:hover {
+        background: #a83838;
+        transform: translateY(-2px);
+      }
+      #accuse-btn:disabled {
+        background: var(--smoke);
+        cursor: default;
+        transform: none;
+      }
+      #accuse-hint {
+        font-family: "Inter", sans-serif;
+        font-size: 10.5px;
+        color: var(--smoke);
+        text-align: center;
+        margin-top: 8px;
+        line-height: 1.4;
+      }
+
+      /* ── Accusation modal ── */
+      #accuse-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        padding: 24px;
+      }
+      #accuse-modal.show {
+        display: flex;
+      }
+      #accuse-modal-inner {
+        background: var(--paper);
+        color: var(--ink);
+        max-width: 420px;
+        width: 100%;
+        padding: 32px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+      }
+      #accuse-modal-inner h3 {
+        font-family: "Playfair Display", serif;
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      #accuse-modal-inner p {
+        font-family: "Special Elite", monospace;
+        font-size: 12.5px;
+        color: var(--smoke);
+        margin-bottom: 18px;
+      }
+      .accuse-option {
+        display: block;
+        width: 100%;
+        text-align: left;
+        font-family: "Inter", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        background: none;
+        border: 1.5px solid rgba(28, 24, 18, 0.2);
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+      }
+      .accuse-option:hover {
+        background: rgba(28, 24, 18, 0.05);
+        border-color: var(--ink);
+      }
+      #cancel-accuse {
+        display: block;
+        margin: 14px auto 0;
+        background: none;
+        border: none;
+        font-family: "Inter", sans-serif;
+        font-size: 12px;
+        color: var(--smoke);
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      /* ── Result screen ── */
+      #result-screen {
+        max-width: 640px;
+        margin: 0 auto;
+        background: var(--paper);
+        color: var(--ink);
+        padding: 44px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+      #result-icon {
+        font-size: 48px;
+        margin-bottom: 8px;
+      }
+      #result-title {
+        font-family: "Playfair Display", serif;
+        font-weight: 900;
+        font-size: 32px;
+        margin-bottom: 10px;
+      }
+      #result-text {
+        font-family: "Special Elite", monospace;
+        font-size: 14px;
+        line-height: 1.85;
+        color: var(--ink-soft);
+        text-align: left;
+        margin-bottom: 24px;
+      }
+      #play-again-btn {
+        font-family: "Special Elite", monospace;
+        font-size: 12px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        background: var(--ink);
+        color: var(--paper);
+        border: none;
+        padding: 13px 32px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      #play-again-btn:hover {
+        background: var(--blood);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <a id="back-link" href="index.html">← Back to the desk</a>
+
+      <div id="case-header">
+        <div id="case-label">Case File No. 7</div>
+        <h1>The Velvet Curtain</h1>
+        <div id="case-sub">A Theatre District Mystery</div>
+      </div>
+
+      <!-- Briefing -->
+      <div class="screen active" id="briefing-screen">
+        <div id="briefing">
+          <h2>The Situation</h2>
+          <p>
+            Opening night at the Aldous Theatre ended in tragedy. Mr. Edmund
+            Vance, the theatre's owner, was found dead behind the velvet curtain
+            shortly after the final bow — struck once, cleanly, with the bronze
+            star award kept backstage.
+          </p>
+          <p>
+            The curtain fell at 9:47 PM. By 9:52, the body was found. In those
+            five minutes, four people were known to be backstage: the leading
+            actress, the stagehand, the playwright, and the theatre critic.
+          </p>
+          <p>
+            Question them. One of them is lying — and the truth doesn't always
+            announce itself. Listen for what doesn't add up, between what they
+            tell you and what the others say.
+          </p>
+          <p>When you're certain, make your accusation. You'll only get one.</p>
+          <div class="signature">
+            — Chief Inspector's notes, left on your desk
+          </div>
+        </div>
+        <button class="begin-btn" id="begin-btn">
+          Begin the interrogation
+        </button>
+      </div>
+
+      <!-- Main Game -->
+      <div class="screen" id="game-screen">
+        <div id="main-layout">
+          <div id="suspect-list">
+            <div class="panel-label">Suspects</div>
+          </div>
+
+          <div id="dialogue-panel">
+            <div id="suspect-header" style="display: none">
+              <div id="suspect-portrait"></div>
+              <div id="suspect-header-text">
+                <h3 id="suspect-name-display"></h3>
+                <p id="suspect-role-display"></p>
+              </div>
+            </div>
+            <div id="dialogue-body">
+              <div id="empty-dialogue">
+                Select a suspect from the left to begin questioning them.
+              </div>
+            </div>
+            <div id="questions" style="display: none"></div>
+          </div>
+
+          <div id="notebook">
+            <div class="panel-label">Your Notebook</div>
+            <div id="clue-list">
+              <div class="clue-empty">
+                Clues you uncover during questioning will be pinned here.
+              </div>
+            </div>
+            <div id="accuse-section">
+              <button id="accuse-btn">Make an accusation</button>
+              <div id="accuse-hint">
+                Question at least two suspects before accusing.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="screen" id="result-screen-wrap">
+        <div id="result-screen">
+          <div id="result-icon"></div>
+          <div id="result-title"></div>
+          <div id="result-text"></div>
+          <button id="play-again-btn">Start a new case</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accusation modal -->
+    <div id="accuse-modal">
+      <div id="accuse-modal-inner">
+        <h3>Who did it?</h3>
+        <p>This is your one and only accusation. Choose carefully.</p>
+        <div id="accuse-options"></div>
+        <button id="cancel-accuse">Not yet — keep questioning</button>
+      </div>
+    </div>
+
+    <script>
+      // ════════════════════════════════════════════════════════════════
+      // CASE DATA
+      // The killer is the STAGEHAND. Tell: she claims she never left the
+      // prop room after 9:40, but the CRITIC independently places her
+      // near the curtain at 9:45. The actress and playwright's stories
+      // are internally consistent and corroborate each other.
+      // ════════════════════════════════════════════════════════════════
+
+      const suspects = [
+        {
+          id: "actress",
+          name: "Lenora Quill",
+          role: "Leading Actress",
+          initial: "L",
+          questions: [
+            {
+              q: "Where were you when the curtain fell?",
+              a: "Right here, in the wings, catching my breath. The bow takes everything out of you. I didn't move from this spot until the screaming started.",
+              clue: "Lenora says she stayed in the wings from 9:47 until the body was found.",
+            },
+            {
+              q: "Did you see anyone near the prop room?",
+              a: "I saw the stagehand — what's her name, Vera — duck in and out of the prop room a few times before the curtain fell. Nothing unusual, that's her job.",
+              clue: "Lenora saw Vera near the prop room, but only before 9:47 — nothing after.",
+            },
+            {
+              q: "Did you get along with Mr. Vance?",
+              a: "He gave me my start. I owed him everything, and he never let me forget it. But murder him? I'd have sooner thanked him on stage every night for the rest of my career.",
+              clue: "Lenora had no apparent motive — she credits Vance for her career.",
+            },
+          ],
+        },
+        {
+          id: "stagehand",
+          name: "Vera Holt",
+          role: "Stagehand",
+          initial: "V",
+          questions: [
+            {
+              q: "Where were you between 9:47 and 9:52?",
+              a: "In the prop room, the whole time, counting inventory for tomorrow's matinee. I never set foot near the curtain after the show ended.",
+              clue: "Vera claims she never left the prop room after 9:40.",
+              contradiction: true,
+              contradictsWith: "critic",
+              contradictionNote:
+                "Vera says she never left the prop room after curtain — but the critic places her near the curtain at 9:45.",
+            },
+            {
+              q: "What was your relationship with Mr. Vance?",
+              a: "He was going to let me go after this run. Budget cuts, he said. Funny how the budget always seems to cut the people who actually do the work.",
+              clue: "Vera was about to be fired by Vance — a clear motive.",
+            },
+            {
+              q: "Did you touch the bronze star award that night?",
+              a: "I polish it before every show, it's tradition. I put it back on its stand backstage around 9:30 and didn't touch it again.",
+              clue: "Vera says she last touched the bronze star at 9:30, well before the murder.",
+            },
+          ],
+        },
+        {
+          id: "playwright",
+          name: "Desmond Ashworth",
+          role: "Playwright",
+          initial: "D",
+          questions: [
+            {
+              q: "Where were you when the curtain fell?",
+              a: "Pacing in the green room, frankly. Opening nights make me ill with nerves. The stage manager can vouch for me — she was filing notes two feet away the entire time.",
+              clue: "Desmond was in the green room with the stage manager as a witness.",
+            },
+            {
+              q: "How was your relationship with Mr. Vance?",
+              a: "Tense, but not violent. He wanted to cut my third act. I wanted to throttle him over coffee, not bronze statuettes.",
+              clue: "Desmond had creative disagreements with Vance, but a weak motive — and an alibi.",
+            },
+            {
+              q: "Did you see the stagehand backstage?",
+              a: "Briefly, before the curtain. Not after — I was in the green room by then, as I said.",
+              clue: "Desmond's account matches Lenora's — Vera was seen only before 9:47.",
+            },
+          ],
+        },
+        {
+          id: "critic",
+          name: "Harriet Voss",
+          role: "Theatre Critic",
+          initial: "H",
+          questions: [
+            {
+              q: "Why were you backstage at all? You're a critic.",
+              a: "Mr. Vance invited me for an exclusive look before I filed my review. I was waiting near the curtain for him at 9:45 when he never came.",
+              clue: "Harriet was near the curtain herself around 9:45, waiting for Vance.",
+            },
+            {
+              q: "Did you see anyone near the curtain around that time?",
+              a: "Yes, actually — the stagehand, Vera. She came through near the curtain around 9:45, looked startled to see me, and hurried off toward the prop room.",
+              clue: "Harriet saw Vera near the curtain at 9:45 — not in the prop room as Vera claimed.",
+              contradiction: true,
+              contradictsWith: "stagehand",
+              contradictionNote:
+                "Harriet places Vera at the curtain at 9:45 — directly contradicting Vera's claim of never leaving the prop room.",
+            },
+            {
+              q: "What did you think of Mr. Vance?",
+              a: "Ruthless about his theatre, generous about everything else. I was going to give the production three stars. He didn't deserve to die over a review he never read.",
+              clue: "Harriet had no apparent motive — her review was still unwritten.",
+            },
+          ],
+        },
+      ];
+
+      const KILLER_ID = "stagehand";
+
+      // ════════════════════════════════════════════════════════════════
+      // STATE
+      // ════════════════════════════════════════════════════════════════
+      let selectedSuspect = null;
+      let askedQuestions = {}; // suspectId -> Set of question indices asked
+      let cluesFound = []; // {text, contradiction}
+      let suspectsQuestioned = new Set();
+      let caseResolved = false;
+
+      suspects.forEach((s) => (askedQuestions[s.id] = new Set()));
+
+      // ════════════════════════════════════════════════════════════════
+      // DOM REFS
+      // ════════════════════════════════════════════════════════════════
+      const briefingScreen = document.getElementById("briefing-screen");
+      const gameScreen = document.getElementById("game-screen");
+      const resultScreenWrap = document.getElementById("result-screen-wrap");
+      const suspectListEl = document.getElementById("suspect-list");
+      const dialogueBody = document.getElementById("dialogue-body");
+      const questionsEl = document.getElementById("questions");
+      const suspectHeader = document.getElementById("suspect-header");
+      const suspectPortrait = document.getElementById("suspect-portrait");
+      const suspectNameDisplay = document.getElementById(
+        "suspect-name-display",
+      );
+      const suspectRoleDisplay = document.getElementById(
+        "suspect-role-display",
+      );
+      const emptyDialogue = document.getElementById("empty-dialogue");
+      const clueListEl = document.getElementById("clue-list");
+      const accuseBtn = document.getElementById("accuse-btn");
+      const accuseHint = document.getElementById("accuse-hint");
+      const accuseModal = document.getElementById("accuse-modal");
+      const accuseOptions = document.getElementById("accuse-options");
+
+      // ════════════════════════════════════════════════════════════════
+      // INIT
+      // ════════════════════════════════════════════════════════════════
+      function renderSuspectList() {
+        suspectListEl
+          .querySelectorAll(".suspect-card")
+          .forEach((el) => el.remove());
+        for (const s of suspects) {
+          const card = document.createElement("div");
+          card.className =
+            "suspect-card" + (selectedSuspect === s.id ? " selected" : "");
+          card.innerHTML = `
+      <div class="suspect-name">${s.name}</div>
+      <div class="suspect-role">${s.role}</div>
+      ${askedQuestions[s.id].size > 0 ? `<div class="suspect-asked-badge">${askedQuestions[s.id].size}/${s.questions.length} asked</div>` : ""}
+    `;
+          card.addEventListener("click", () => selectSuspect(s.id));
+          suspectListEl.appendChild(card);
+        }
+      }
+
+      function selectSuspect(id) {
+        selectedSuspect = id;
+        suspectsQuestioned.add(id);
+        const s = suspects.find((x) => x.id === id);
+
+        emptyDialogue.style.display = "none";
+        suspectHeader.style.display = "flex";
+        questionsEl.style.display = "flex";
+
+        suspectPortrait.textContent = s.initial;
+        suspectNameDisplay.textContent = s.name;
+        suspectRoleDisplay.textContent = s.role;
+
+        renderSuspectList();
+        renderDialogue(s);
+        renderQuestions(s);
+        updateAccuseAvailability();
+      }
+
+      function renderDialogue(s) {
+        dialogueBody.innerHTML = "";
+        const asked = askedQuestions[s.id];
+        if (asked.size === 0) {
+          dialogueBody.innerHTML = `<div style="font-family:'Playfair Display',serif;font-style:italic;color:var(--smoke);font-size:14px;text-align:center;padding:30px;">${s.name} waits, arms folded. Ask your first question.</div>`;
+          return;
+        }
+        for (const idx of asked) {
+          const item = s.questions[idx];
+          const playerLine = document.createElement("div");
+          playerLine.className = "dialogue-line player";
+          playerLine.innerHTML = `<div class="bubble">${item.q}</div>`;
+          dialogueBody.appendChild(playerLine);
+
+          const suspectLine = document.createElement("div");
+          suspectLine.className = "dialogue-line";
+          suspectLine.innerHTML = `<div class="bubble${item.contradiction ? " contradiction-flag" : ""}">${item.a}</div>`;
+          dialogueBody.appendChild(suspectLine);
+        }
+        dialogueBody.scrollTop = dialogueBody.scrollHeight;
+      }
+
+      function renderQuestions(s) {
+        questionsEl.innerHTML = "";
+        s.questions.forEach((q, idx) => {
+          const btn = document.createElement("button");
+          btn.className = "q-btn";
+          btn.textContent = q.q;
+          const wasAsked = askedQuestions[s.id].has(idx);
+          btn.disabled = wasAsked;
+          if (wasAsked) btn.textContent += "  ✓";
+          btn.addEventListener("click", () => askQuestion(s, idx));
+          questionsEl.appendChild(btn);
+        });
+      }
+
+      function askQuestion(s, idx) {
+        askedQuestions[s.id].add(idx);
+        const item = s.questions[idx];
+
+        addClue(item.clue, !!item.contradiction);
+
+        renderDialogue(s);
+        renderQuestions(s);
+        renderSuspectList();
+        updateAccuseAvailability();
+      }
+
+      function addClue(text, isContradiction) {
+        // Avoid exact duplicate clue text
+        if (cluesFound.some((c) => c.text === text)) return;
+        cluesFound.push({ text, contradiction: isContradiction });
+        renderClues();
+      }
+
+      function renderClues() {
+        if (cluesFound.length === 0) {
+          clueListEl.innerHTML =
+            '<div class="clue-empty">Clues you uncover during questioning will be pinned here.</div>';
+          return;
+        }
+        clueListEl.innerHTML = "";
+        for (const c of cluesFound) {
+          const card = document.createElement("div");
+          card.className =
+            "clue-card" + (c.contradiction ? " contradiction" : "");
+          card.innerHTML = `${c.contradiction ? '<div class="clue-stamp">CONTRADICTION</div>' : ""}${c.text}`;
+          clueListEl.appendChild(card);
+        }
+      }
+
+      function updateAccuseAvailability() {
+        const enough = suspectsQuestioned.size >= 2;
+        accuseBtn.disabled = !enough;
+        accuseHint.textContent = enough
+          ? "When you're ready, name your suspect."
+          : "Question at least two suspects before accusing.";
+      }
+
+      // ════════════════════════════════════════════════════════════════
+      // ACCUSATION
+      // ════════════════════════════════════════════════════════════════
+      accuseBtn.addEventListener("click", () => {
+        accuseOptions.innerHTML = "";
+        for (const s of suspects) {
+          const btn = document.createElement("button");
+          btn.className = "accuse-option";
+          btn.innerHTML = `<strong>${s.name}</strong> — ${s.role}`;
+          btn.addEventListener("click", () => makeAccusation(s.id));
+          accuseOptions.appendChild(btn);
+        }
+        accuseModal.classList.add("show");
+      });
+
+      document.getElementById("cancel-accuse").addEventListener("click", () => {
+        accuseModal.classList.remove("show");
+      });
+
+      function makeAccusation(suspectId) {
+        accuseModal.classList.remove("show");
+        caseResolved = true;
+
+        const correct = suspectId === KILLER_ID;
+        const accused = suspects.find((s) => s.id === suspectId);
+        const killer = suspects.find((s) => s.id === KILLER_ID);
+
+        showResult(correct, accused, killer);
+      }
+
+      function showResult(correct, accused, killer) {
+        gameScreen.classList.remove("active");
+        resultScreenWrap.classList.add("active");
+
+        const icon = document.getElementById("result-icon");
+        const title = document.getElementById("result-title");
+        const text = document.getElementById("result-text");
+
+        if (correct) {
+          icon.textContent = "🔍";
+          title.textContent = "Case Closed";
+          text.innerHTML = `
+      <p style="margin-bottom:14px;">You were right. <strong>${killer.name}</strong> cracked under the weight of her own story — claiming she never left the prop room after 9:40, while Harriet Voss placed her squarely at the curtain at 9:45, just minutes before the body was found.</p>
+      <p style="margin-bottom:14px;">Faced with the contradiction, Vera confessed: Vance had told her that afternoon she'd be let go after the run. She went to confront him one last time. It wasn't planned. The bronze star was simply within reach.</p>
+      <p>The Aldous Theatre will reopen next season, under new management — and a quieter prop room.</p>
+    `;
+        } else {
+          icon.textContent = "✗";
+          title.textContent = "Wrong Call";
+          text.innerHTML = `
+      <p style="margin-bottom:14px;">You accused <strong>${accused.name}</strong> — but the evidence didn't hold. ${accused.name}'s account never contradicted anyone else's testimony.</p>
+      <p style="margin-bottom:14px;">The real culprit was <strong>${killer.name}</strong>. She claimed she never left the prop room after 9:40 — but Harriet Voss independently placed her near the curtain at 9:45, just before the body was found. That was the thread to pull.</p>
+      <p>The case goes cold. Perhaps a second look at the notebook would have caught it.</p>
+    `;
+        }
+      }
+
+      // ════════════════════════════════════════════════════════════════
+      // SCREEN FLOW
+      // ════════════════════════════════════════════════════════════════
+      document.getElementById("begin-btn").addEventListener("click", () => {
+        briefingScreen.classList.remove("active");
+        gameScreen.classList.add("active");
+        renderSuspectList();
+      });
+
+      document
+        .getElementById("play-again-btn")
+        .addEventListener("click", () => {
+          // Reset state
+          selectedSuspect = null;
+          askedQuestions = {};
+          suspects.forEach((s) => (askedQuestions[s.id] = new Set()));
+          cluesFound = [];
+          suspectsQuestioned = new Set();
+          caseResolved = false;
+
+          resultScreenWrap.classList.remove("active");
+          briefingScreen.classList.add("active");
+
+          emptyDialogue.style.display = "flex";
+          suspectHeader.style.display = "none";
+          questionsEl.style.display = "none";
+          dialogueBody.innerHTML = "";
+          dialogueBody.appendChild(emptyDialogue);
+          renderClues();
+        });
+
+      // Initial render
+      renderSuspectList();
+    </script>
+  </body>
+</html>
