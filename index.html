@@ -52,17 +52,12 @@
           #150e06 20px
         );
         border-bottom: 1px solid rgba(212, 175, 90, 0.3);
-        padding: 0;
         overflow: hidden;
       }
-      .announce-bar::before,
-      .announce-bar::after {
+      .announce-bar::before {
         content: "";
         position: absolute;
         inset: 0;
-        pointer-events: none;
-      }
-      .announce-bar::before {
         background: linear-gradient(
           90deg,
           rgba(10, 8, 6, 0.8) 0%,
@@ -71,6 +66,7 @@
           rgba(10, 8, 6, 0.8) 100%
         );
         z-index: 2;
+        pointer-events: none;
       }
       .announce-inner {
         display: flex;
@@ -112,12 +108,6 @@
       }
       .announce-text strong {
         color: var(--pin-gold);
-        font-style: normal;
-      }
-      .announce-ticker {
-        display: flex;
-        align-items: center;
-        gap: 18px;
       }
       @media (prefers-reduced-motion: no-preference) {
         .announce-badge {
@@ -134,7 +124,7 @@
         }
       }
 
-      /* cork board texture */
+      /* ===== CORK BOARD ===== */
       .cork-bg {
         position: fixed;
         inset: 0;
@@ -214,6 +204,7 @@
           );
       }
 
+      /* ===== ANIMATIONS ===== */
       @media (prefers-reduced-motion: no-preference) {
         .lamp-glow {
           animation: glow-pulse 5s ease-in-out infinite;
@@ -349,7 +340,6 @@
         content: "●";
         font-size: 8px;
       }
-
       h1 {
         font-family: "Oswald", sans-serif;
         font-weight: 700;
@@ -512,9 +502,11 @@
       }
       .slot-row {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 32px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 28px;
       }
+
+      /* ===== SLOT (coming soon) ===== */
       .slot {
         position: relative;
         aspect-ratio: 4/5;
@@ -728,11 +720,14 @@
         border-top: 1px solid rgba(143, 124, 79, 0.18);
       }
 
-      @media (max-width: 720px) {
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 880px) {
         .slot-row {
           grid-template-columns: repeat(2, 1fr);
           gap: 22px;
         }
+      }
+      @media (max-width: 720px) {
         .hero-meta {
           gap: 30px;
         }
@@ -755,6 +750,8 @@
         }
         .announce-text {
           font-size: 11px;
+          white-space: normal;
+          text-align: center;
         }
       }
     </style>
@@ -798,8 +795,8 @@
       <div class="divider"></div>
 
       <div class="hero-meta reveal" style="animation-delay: 0.2s">
-        <span><b>1</b>Case Filed</span>
-        <span><b>0</b>Closed</span>
+        <span><b>2</b>Cases Filed</span>
+        <span><b>2</b>Cases Coming Soon</span>
         <span><b>Open</b>Status</span>
       </div>
 
@@ -811,7 +808,7 @@
 
     <section class="board-section" id="board">
       <div class="board-label">The Evidence Board</div>
-      <p class="board-sub">one file open, more pins waiting</p>
+      <p class="board-sub">four files open — the board is filling up</p>
 
       <div class="slot-row">
         <a
@@ -838,16 +835,84 @@
             <span>4 Suspects</span>
           </div>
         </a>
-        <div class="slot">
-          <div class="slot-pin" aria-hidden="true"></div>
-          <span class="slot-icon">📌</span>
-          <span class="slot-label">Saturday</span>
-        </div>
-        <div class="slot">
-          <div class="slot-pin" aria-hidden="true"></div>
-          <span class="slot-icon">📌</span>
-          <span class="slot-label">Coming Soon</span>
-        </div>
+
+        <a
+          class="case-card reveal"
+          href="case2.html"
+          aria-label="Open Case File No. 12: Last Call at the Mercer"
+        >
+          <div class="case-pin" aria-hidden="true"></div>
+          <div class="case-clip" aria-hidden="true"></div>
+          <div class="case-card-top">
+            <span class="case-number">FILE NO. 12</span>
+            <span class="case-status">Open</span>
+          </div>
+          <div class="case-photo">
+            <span class="case-photo-icon" aria-hidden="true">🥃</span>
+          </div>
+          <h3 class="case-title">Last Call at the Mercer</h3>
+          <p class="case-brief">
+            A bar owner, dead in his own office, the night of his tenth
+            anniversary party. Five people had keys.
+          </p>
+          <div class="case-footer">
+            <span>Downtown</span>
+            <span>5 Suspects</span>
+          </div>
+        </a>
+
+        <a
+          class="case-card reveal"
+          href="#"
+          aria-label="Coming Soon: The Penthouse on 9th"
+        >
+          <div class="case-pin" aria-hidden="true"></div>
+          <div class="case-clip" aria-hidden="true"></div>
+          <div class="case-card-top">
+            <span class="case-number">FILE NO. 15</span>
+            <span class="case-status" style="background: #5a4a2e">Soon</span>
+          </div>
+          <div class="case-photo">
+            <span class="case-photo-icon" aria-hidden="true">🏙️</span>
+          </div>
+          <h3 class="case-title">The Penthouse on 9th</h3>
+          <p class="case-brief">
+            A founder vanishes hours before a board vote. Locked door, no
+            struggle, no body — just five people who know more than they're
+            saying.
+          </p>
+          <div class="case-footer">
+            <span>Financial District</span>
+            <span>5 Persons of Interest</span>
+          </div>
+        </a>
+
+        <a
+          class="case-card reveal"
+          href="#"
+          aria-label="Coming Soon: Dead Reckoning"
+        >
+          <div class="case-pin" aria-hidden="true"></div>
+          <div class="case-clip" aria-hidden="true"></div>
+          <div class="case-card-top">
+            <span class="case-number">FILE NO. 22</span>
+            <span class="case-status" style="background: #2e4a52"
+              >Long Case</span
+            >
+          </div>
+          <div class="case-photo">
+            <span class="case-photo-icon" aria-hidden="true">⚓</span>
+          </div>
+          <h3 class="case-title">Dead Reckoning</h3>
+          <p class="case-brief">
+            A shipping magnate over the railing in the middle of the ocean.
+            Eight suspects, locked doors, and no port for four more days.
+          </p>
+          <div class="case-footer">
+            <span>MS Solveig</span>
+            <span>8 Suspects</span>
+          </div>
+        </a>
       </div>
     </section>
 
