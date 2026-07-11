@@ -1,0 +1,1103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    />
+    <title>The Penthouse on 9th</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500&family=Special+Elite&family=Inter:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --paper: #ede3d0;
+        --paper-dark: #e0d3b8;
+        --ink: #1c1812;
+        --ink-soft: #3a332a;
+        --brass: #a8823c;
+        --blood: #8b2c2c;
+        --smoke: #6b6458;
+        --folder: #c9a876;
+        --steel: #3c5468;
+      }
+
+      body {
+        background: var(--ink);
+        background-image:
+          radial-gradient(
+            ellipse at 30% 20%,
+            rgba(60, 84, 104, 0.08) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            ellipse at 70% 80%,
+            rgba(139, 44, 44, 0.05) 0%,
+            transparent 50%
+          );
+        min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        color: var(--paper);
+        overflow-x: hidden;
+      }
+
+      /* ── City-light vignette ── */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 80% 60% at 50% 0%,
+          rgba(60, 84, 104, 0.1) 0%,
+          transparent 60%
+        );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      #app {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 24px 80px;
+      }
+
+      #back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "Special Elite", monospace;
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--brass);
+        text-decoration: none;
+        margin-bottom: 24px;
+        opacity: 0.85;
+        transition:
+          opacity 0.15s,
+          transform 0.15s;
+      }
+      #back-link:hover {
+        opacity: 1;
+        transform: translateX(-3px);
+      }
+
+      /* ── Header ── */
+      #case-header {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+      #case-label {
+        font-family: "Special Elite", monospace;
+        font-size: 11px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 8px;
+      }
+      h1 {
+        font-family: "Playfair Display", serif;
+        font-weight: 900;
+        font-size: clamp(30px, 6vw, 52px);
+        color: var(--paper);
+        letter-spacing: 0.01em;
+        line-height: 1.05;
+      }
+      #case-sub {
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+        font-weight: 500;
+        font-size: 15px;
+        color: var(--smoke);
+        margin-top: 6px;
+      }
+
+      /* ── Briefing screen ── */
+      .screen {
+        display: none;
+      }
+      .screen.active {
+        display: block;
+      }
+
+      #briefing {
+        max-width: 680px;
+        margin: 0 auto;
+        background: var(--paper);
+        color: var(--ink);
+        border-radius: 2px;
+        padding: 40px 44px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        position: relative;
+      }
+      #briefing::before {
+        content: "CASE FILE";
+        position: absolute;
+        top: 20px;
+        right: 24px;
+        font-family: "Special Elite", monospace;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: var(--blood);
+        border: 1.5px solid var(--blood);
+        padding: 3px 10px;
+        transform: rotate(4deg);
+        opacity: 0.7;
+      }
+      #briefing h2 {
+        font-family: "Playfair Display", serif;
+        font-weight: 700;
+        font-size: 24px;
+        margin-bottom: 18px;
+        color: var(--ink);
+      }
+      #briefing p {
+        font-family: "Special Elite", monospace;
+        font-size: 14px;
+        line-height: 1.85;
+        color: var(--ink-soft);
+        margin-bottom: 16px;
+      }
+      #briefing .signature {
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+        text-align: right;
+        color: var(--smoke);
+        font-size: 14px;
+        margin-top: 24px;
+      }
+      .begin-btn {
+        display: block;
+        margin: 32px auto 0;
+        font-family: "Special Elite", monospace;
+        font-size: 13px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        background: var(--ink);
+        color: var(--paper);
+        border: none;
+        padding: 14px 38px;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.15s;
+      }
+      .begin-btn:hover {
+        background: var(--blood);
+        transform: translateY(-2px);
+      }
+
+      /* ── Main interrogation layout ── */
+      #main-layout {
+        display: grid;
+        grid-template-columns: 240px 1fr 280px;
+        gap: 24px;
+        align-items: start;
+      }
+      @media (max-width: 900px) {
+        #main-layout {
+          grid-template-columns: 1fr;
+        }
+        #suspect-list {
+          order: 1;
+        }
+        #dialogue-panel {
+          order: 2;
+        }
+        #notebook {
+          order: 3;
+        }
+      }
+
+      /* ── Suspect list (left) ── */
+      #suspect-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .panel-label {
+        font-family: "Special Elite", monospace;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 4px;
+      }
+      .suspect-card {
+        background: var(--paper);
+        color: var(--ink);
+        padding: 14px 16px;
+        cursor: pointer;
+        border-left: 4px solid transparent;
+        transition:
+          transform 0.15s,
+          border-color 0.2s;
+        position: relative;
+      }
+      .suspect-card:hover {
+        transform: translateX(4px);
+      }
+      .suspect-card.selected {
+        border-left-color: var(--blood);
+        background: var(--paper-dark);
+      }
+      .suspect-name {
+        font-family: "Playfair Display", serif;
+        font-weight: 700;
+        font-size: 16px;
+      }
+      .suspect-role {
+        font-family: "Special Elite", monospace;
+        font-size: 11px;
+        color: var(--smoke);
+        margin-top: 2px;
+      }
+      .suspect-asked-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 10px;
+        color: var(--brass);
+        font-family: "Special Elite", monospace;
+      }
+
+      /* ── Dialogue panel (center) ── */
+      #dialogue-panel {
+        background: var(--paper);
+        color: var(--ink);
+        min-height: 480px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4);
+      }
+      #suspect-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 24px 28px;
+        border-bottom: 2px solid var(--ink);
+      }
+      #suspect-portrait {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--ink);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Playfair Display", serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--paper);
+        flex-shrink: 0;
+      }
+      #suspect-header-text h3 {
+        font-family: "Playfair Display", serif;
+        font-size: 22px;
+        font-weight: 700;
+      }
+      #suspect-header-text p {
+        font-family: "Special Elite", monospace;
+        font-size: 12px;
+        color: var(--smoke);
+        margin-top: 2px;
+      }
+
+      #dialogue-body {
+        flex: 1;
+        padding: 24px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        overflow-y: auto;
+        max-height: 340px;
+      }
+      .dialogue-line {
+        display: flex;
+        gap: 12px;
+        animation: fadeIn 0.35s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .dialogue-line.player .bubble {
+        background: var(--ink);
+        color: var(--paper);
+        margin-left: auto;
+      }
+      .dialogue-line.player {
+        justify-content: flex-end;
+      }
+      .bubble {
+        font-family: "Special Elite", monospace;
+        font-size: 13.5px;
+        line-height: 1.6;
+        background: var(--paper-dark);
+        padding: 12px 16px;
+        max-width: 80%;
+        position: relative;
+      }
+      .bubble.contradiction-flag {
+        border-left: 3px solid var(--blood);
+      }
+
+      #empty-dialogue {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+        color: var(--smoke);
+        font-size: 15px;
+        text-align: center;
+        padding: 40px;
+      }
+
+      /* Questions */
+      #questions {
+        padding: 18px 28px 24px;
+        border-top: 1px solid rgba(28, 24, 18, 0.12);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .q-btn {
+        font-family: "Inter", sans-serif;
+        font-size: 13.5px;
+        font-weight: 500;
+        text-align: left;
+        background: none;
+        border: 1.5px solid rgba(28, 24, 18, 0.18);
+        color: var(--ink);
+        padding: 11px 16px;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+      }
+      .q-btn:hover {
+        background: rgba(28, 24, 18, 0.05);
+        border-color: var(--ink);
+      }
+      .q-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .q-btn:disabled:hover {
+        background: none;
+      }
+
+      /* ── Notebook (right) ── */
+      #notebook {
+        background: #2a241c;
+        padding: 20px;
+        position: sticky;
+        top: 20px;
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4);
+      }
+      #notebook .panel-label {
+        color: var(--brass);
+        margin-bottom: 12px;
+      }
+      #clue-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 60px;
+      }
+      .clue-empty {
+        font-family: "Playfair Display", serif;
+        font-style: italic;
+        font-size: 12.5px;
+        color: var(--smoke);
+        line-height: 1.5;
+      }
+      .clue-card {
+        background: var(--paper);
+        color: var(--ink);
+        padding: 10px 12px;
+        font-family: "Special Elite", monospace;
+        font-size: 11.5px;
+        line-height: 1.5;
+        position: relative;
+        animation: fadeIn 0.4s ease;
+      }
+      .clue-card.contradiction {
+        background: #f3e5e0;
+      }
+      .clue-stamp {
+        position: absolute;
+        top: -8px;
+        right: -6px;
+        background: var(--blood);
+        color: #fff;
+        font-family: "Special Elite", monospace;
+        font-size: 8px;
+        letter-spacing: 0.1em;
+        padding: 3px 7px;
+        transform: rotate(8deg);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      #accuse-section {
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(237, 227, 208, 0.15);
+      }
+      #accuse-btn {
+        width: 100%;
+        font-family: "Special Elite", monospace;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        background: var(--blood);
+        color: #fff;
+        border: none;
+        padding: 13px;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.15s;
+      }
+      #accuse-btn:hover {
+        background: #a83838;
+        transform: translateY(-2px);
+      }
+      #accuse-btn:disabled {
+        background: var(--smoke);
+        cursor: default;
+        transform: none;
+      }
+      #accuse-hint {
+        font-family: "Inter", sans-serif;
+        font-size: 10.5px;
+        color: var(--smoke);
+        text-align: center;
+        margin-top: 8px;
+        line-height: 1.4;
+      }
+
+      /* ── Accusation modal ── */
+      #accuse-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        padding: 24px;
+      }
+      #accuse-modal.show {
+        display: flex;
+      }
+      #accuse-modal-inner {
+        background: var(--paper);
+        color: var(--ink);
+        max-width: 420px;
+        width: 100%;
+        padding: 32px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+        max-height: 85vh;
+        overflow-y: auto;
+      }
+      #accuse-modal-inner h3 {
+        font-family: "Playfair Display", serif;
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      #accuse-modal-inner p {
+        font-family: "Special Elite", monospace;
+        font-size: 12.5px;
+        color: var(--smoke);
+        margin-bottom: 18px;
+      }
+      .accuse-option {
+        display: block;
+        width: 100%;
+        text-align: left;
+        font-family: "Inter", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        background: none;
+        border: 1.5px solid rgba(28, 24, 18, 0.2);
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+      }
+      .accuse-option:hover {
+        background: rgba(28, 24, 18, 0.05);
+        border-color: var(--ink);
+      }
+      #cancel-accuse {
+        display: block;
+        margin: 14px auto 0;
+        background: none;
+        border: none;
+        font-family: "Inter", sans-serif;
+        font-size: 12px;
+        color: var(--smoke);
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      /* ── Result screen ── */
+      #result-screen {
+        max-width: 640px;
+        margin: 0 auto;
+        background: var(--paper);
+        color: var(--ink);
+        padding: 44px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+      #result-icon {
+        font-size: 48px;
+        margin-bottom: 8px;
+      }
+      #result-title {
+        font-family: "Playfair Display", serif;
+        font-weight: 900;
+        font-size: 32px;
+        margin-bottom: 10px;
+      }
+      #result-text {
+        font-family: "Special Elite", monospace;
+        font-size: 14px;
+        line-height: 1.85;
+        color: var(--ink-soft);
+        text-align: left;
+        margin-bottom: 24px;
+      }
+      #play-again-btn {
+        font-family: "Special Elite", monospace;
+        font-size: 12px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        background: var(--ink);
+        color: var(--paper);
+        border: none;
+        padding: 13px 32px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      #play-again-btn:hover {
+        background: var(--blood);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <a id="back-link" href="index.html">← Back to the desk</a>
+
+      <div id="case-header">
+        <div id="case-label">Case File No. 15</div>
+        <h1>The Penthouse on 9th</h1>
+        <div id="case-sub">A Disappearance, Not Yet a Crime</div>
+      </div>
+
+      <!-- Briefing -->
+      <div class="screen active" id="briefing-screen">
+        <div id="briefing">
+          <h2>The Situation</h2>
+          <p>
+            Iris Calloway, founder and CEO of a mid-sized fintech startup, was
+            last seen entering her ninth-floor apartment at 10:40 PM. By 8:00 AM
+            the next morning — three hours before a board vote that would have
+            stripped her of control of the company she built — she was gone.
+          </p>
+          <p>
+            The door was locked from the inside. Nothing was broken. Her phone,
+            her passport, and one suitcase were missing; everything else, down
+            to the coffee still cooling on the counter, was exactly where she'd
+            left it. No struggle. No note.
+          </p>
+          <p>
+            Five people knew her well enough to have a key, a motive, or both:
+            her co-founder, her assistant, the building's night doorman, her
+            ex-fiancé, and her lawyer. Nobody's reported a crime, exactly. But
+            somebody knows more than they're saying, and the board vote is in
+            six hours.
+          </p>
+          <p>
+            Find out if Iris ran, or if she was made to disappear — and who
+            helped, or hindered, either way. You only get one name.
+          </p>
+          <div class="signature">
+            — Forwarded by building security, unofficially
+          </div>
+        </div>
+        <button class="begin-btn" id="begin-btn">
+          Begin the interrogation
+        </button>
+      </div>
+
+      <!-- Main Game -->
+      <div class="screen" id="game-screen">
+        <div id="main-layout">
+          <div id="suspect-list">
+            <div class="panel-label">Persons of Interest</div>
+          </div>
+
+          <div id="dialogue-panel">
+            <div id="suspect-header" style="display: none">
+              <div id="suspect-portrait"></div>
+              <div id="suspect-header-text">
+                <h3 id="suspect-name-display"></h3>
+                <p id="suspect-role-display"></p>
+              </div>
+            </div>
+            <div id="dialogue-body">
+              <div id="empty-dialogue">
+                Select a person from the left to begin questioning them.
+              </div>
+            </div>
+            <div id="questions" style="display: none"></div>
+          </div>
+
+          <div id="notebook">
+            <div class="panel-label">Your Notebook</div>
+            <div id="clue-list">
+              <div class="clue-empty">
+                Clues you uncover during questioning will be pinned here.
+              </div>
+            </div>
+            <div id="accuse-section">
+              <button id="accuse-btn">Name who helped her vanish</button>
+              <div id="accuse-hint">
+                Question at least three people before accusing.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="screen" id="result-screen-wrap">
+        <div id="result-screen">
+          <div id="result-icon"></div>
+          <div id="result-title"></div>
+          <div id="result-text"></div>
+          <button id="play-again-btn">Start a new case</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accusation modal -->
+    <div id="accuse-modal">
+      <div id="accuse-modal-inner">
+        <h3>Who knew more than they said?</h3>
+        <p>This is your one and only accusation. Choose carefully.</p>
+        <div id="accuse-options"></div>
+        <button id="cancel-accuse">Not yet — keep questioning</button>
+      </div>
+    </div>
+
+    <script>
+      // ════════════════════════════════════════════════════════════════
+      // CASE DATA — "The Penthouse on 9th"
+      // Iris isn't dead — she orchestrated her own disappearance to dodge
+      // the board vote and leave with leverage. The person being
+      // identified is whoever helped her and is lying about contact.
+      // That's the ASSISTANT (Bex). Tell: Bex claims no contact with Iris
+      // in three days, but the DOORMAN saw a courier deliver a parcel,
+      // addressed in Bex's handwriting, to a car waiting outside the
+      // morning after Iris vanished — proof Bex was still coordinating
+      // with her. Everyone else's account is internally consistent.
+      // ════════════════════════════════════════════════════════════════
+
+      const suspects = [
+        {
+          id: "cofounder",
+          name: "Theo Marsh",
+          role: "Co-Founder",
+          initial: "T",
+          questions: [
+            {
+              q: "Where were you the night Iris disappeared?",
+              a: "Home, prepping the deck for the board vote. My building's got camera-logged entry, I can pull the timestamp if anyone needs it. I never left after 9 PM.",
+              clue: "Theo says he was home from 9 PM, with camera-logged entry to confirm it.",
+            },
+            {
+              q: "Did you want her out as CEO?",
+              a: "I wanted the board to vote, yes. She'd been making calls I didn't agree with. But I wanted her out in a boardroom, not vanished — this throws the whole vote into chaos, it doesn't help me at all.",
+              clue: "Theo backed the ouster vote, but notes her disappearance actually disrupts his plan.",
+            },
+            {
+              q: "Had you spoken to her recently?",
+              a: "Two days before, briefly, about the vote agenda. Strictly business, maybe four sentences. Nothing since.",
+              clue: "Theo's last contact with Iris was two days before she vanished, about vote logistics.",
+            },
+          ],
+        },
+        {
+          id: "assistant",
+          name: "Bex Okafor",
+          role: "Executive Assistant",
+          initial: "B",
+          questions: [
+            {
+              q: "When did you last speak with Iris?",
+              a: "It's been three days, actually. She went quiet on me right before all this, which wasn't like her — she usually has me handling something at all hours.",
+              clue: "Bex claims she hasn't spoken to Iris in three days.",
+              contradiction: true,
+              contradictsWith: "doorman",
+              contradictionNote:
+                "Bex says she had no contact with Iris in three days — but the doorman saw a parcel in Bex's handwriting delivered to a car waiting for Iris the morning she vanished.",
+            },
+            {
+              q: "You manage her finances. Anything unusual lately?",
+              a: "I move money around for her constantly, it's the job. If you're asking whether I've been skimming, no. I've got nothing to hide there.",
+              clue: "Bex denies any financial impropriety in managing Iris's accounts.",
+            },
+            {
+              q: "Did Iris seem distressed before she disappeared?",
+              a: "Distressed isn't the word I'd use. Focused, maybe. Like she was tying off loose ends. I didn't think much of it until now.",
+              clue: "Bex describes Iris as unusually focused and tying off loose ends beforehand.",
+            },
+          ],
+        },
+        {
+          id: "doorman",
+          name: "Sal Ferreira",
+          role: "Night Doorman",
+          initial: "S",
+          questions: [
+            {
+              q: "Did you see Iris leave the building?",
+              a: "Not through the front, no — I'm here all night and I'd have seen her. There's a service exit by the garage, though, no camera on that one. Building's been meaning to fix that for a year.",
+              clue: "The building has an uncovered service exit by the garage with no camera.",
+            },
+            {
+              q: "Anything unusual happen that morning?",
+              a: "A courier showed up around 8 with a parcel for a car idling out front — sedan, tinted windows, never got a plate. Address label was handwritten, looked like Bex's writing, I've seen her sign for packages a hundred times.",
+              clue: "A courier delivered a parcel, addressed in Bex's handwriting, to a waiting car the morning Iris vanished.",
+              contradiction: true,
+              contradictsWith: "assistant",
+              contradictionNote:
+                "Sal saw a parcel in Bex's handwriting delivered to Iris's car that morning — directly contradicting Bex's claim of no contact in three days.",
+            },
+            {
+              q: "Did anyone besides Iris come and go that night?",
+              a: "Theo came by around 7 PM, dropped off a folder at the desk for her, didn't go up. That's the only visitor I logged before her own door closed at 10:40.",
+              clue: "Sal confirms Theo visited briefly at 7 PM but never went upstairs.",
+            },
+          ],
+        },
+        {
+          id: "exfiance",
+          name: "Noah Kessler",
+          role: "Ex-Fiancé",
+          initial: "N",
+          questions: [
+            {
+              q: "When's the last time you were in contact with Iris?",
+              a: "Five, six months, around when we ended things. It wasn't pretty. I haven't called, texted, none of it. Ask anyone, I've made a point of staying gone.",
+              clue: "Noah claims no contact with Iris in roughly five to six months.",
+            },
+            {
+              q: "You still had a key to her place, didn't you?",
+              a: "I gave it back the week we split, mailed it actually, with the spare fob. I didn't want a reason to be tempted to use it, if I'm honest.",
+              clue: "Noah says he returned his key by mail shortly after the breakup.",
+            },
+            {
+              q: "Were you angry about how things ended?",
+              a: "Angry, yeah, for a while. Not anymore, mostly. I've got my own life now. I didn't wish her gone, I just stopped wishing she'd call.",
+              clue: "Noah admits past anger over the breakup but denies any current animosity.",
+            },
+          ],
+        },
+        {
+          id: "lawyer",
+          name: "Priscilla Wren",
+          role: "Iris's Lawyer",
+          initial: "P",
+          questions: [
+            {
+              q: "What was your role in the board fight?",
+              a: "I was running her defense against the ouster vote. We had a real shot at winning it, frankly. Her disappearing the morning of is the worst possible timing for that case.",
+              clue: "Priscilla was leading Iris's legal defense against the board vote.",
+            },
+            {
+              q: "Did you stand to lose money if she stepped down?",
+              a: "A significant fee, yes, tied to a successful defense. I won't pretend that's not a motive on paper. But a missing client is worth nothing to me — dead deals don't pay retainers either.",
+              clue: "Priscilla had a fee tied to a successful defense, but notes Iris vanishing costs her, not benefits her.",
+            },
+            {
+              q: "Did Iris ever discuss leaving the company voluntarily?",
+              a: "Once, off the record, weeks ago — she joked about just walking away from the whole thing. I told her to stop joking, the board would love that. I didn't think she meant it.",
+              clue: "Iris had once mentioned, semi-jokingly, the idea of walking away from the company entirely.",
+            },
+          ],
+        },
+      ];
+
+      const KILLER_ID = "assistant";
+
+      // ════════════════════════════════════════════════════════════════
+      // STATE
+      // ════════════════════════════════════════════════════════════════
+      let selectedSuspect = null;
+      let askedQuestions = {}; // suspectId -> Set of question indices asked
+      let cluesFound = []; // {text, contradiction}
+      let suspectsQuestioned = new Set();
+      let caseResolved = false;
+
+      suspects.forEach((s) => (askedQuestions[s.id] = new Set()));
+
+      // ════════════════════════════════════════════════════════════════
+      // DOM REFS
+      // ════════════════════════════════════════════════════════════════
+      const briefingScreen = document.getElementById("briefing-screen");
+      const gameScreen = document.getElementById("game-screen");
+      const resultScreenWrap = document.getElementById("result-screen-wrap");
+      const suspectListEl = document.getElementById("suspect-list");
+      const dialogueBody = document.getElementById("dialogue-body");
+      const questionsEl = document.getElementById("questions");
+      const suspectHeader = document.getElementById("suspect-header");
+      const suspectPortrait = document.getElementById("suspect-portrait");
+      const suspectNameDisplay = document.getElementById(
+        "suspect-name-display",
+      );
+      const suspectRoleDisplay = document.getElementById(
+        "suspect-role-display",
+      );
+      const emptyDialogue = document.getElementById("empty-dialogue");
+      const clueListEl = document.getElementById("clue-list");
+      const accuseBtn = document.getElementById("accuse-btn");
+      const accuseHint = document.getElementById("accuse-hint");
+      const accuseModal = document.getElementById("accuse-modal");
+      const accuseOptions = document.getElementById("accuse-options");
+
+      // ════════════════════════════════════════════════════════════════
+      // RENDER
+      // ════════════════════════════════════════════════════════════════
+      function renderSuspectList() {
+        suspectListEl
+          .querySelectorAll(".suspect-card")
+          .forEach((el) => el.remove());
+        for (const s of suspects) {
+          const card = document.createElement("div");
+          card.className =
+            "suspect-card" + (selectedSuspect === s.id ? " selected" : "");
+          card.innerHTML = `
+      <div class="suspect-name">${s.name}</div>
+      <div class="suspect-role">${s.role}</div>
+      ${askedQuestions[s.id].size > 0 ? `<div class="suspect-asked-badge">${askedQuestions[s.id].size}/${s.questions.length} asked</div>` : ""}
+    `;
+          card.addEventListener("click", () => selectSuspect(s.id));
+          suspectListEl.appendChild(card);
+        }
+      }
+
+      function selectSuspect(id) {
+        selectedSuspect = id;
+        suspectsQuestioned.add(id);
+        const s = suspects.find((x) => x.id === id);
+
+        emptyDialogue.style.display = "none";
+        suspectHeader.style.display = "flex";
+        questionsEl.style.display = "flex";
+
+        suspectPortrait.textContent = s.initial;
+        suspectNameDisplay.textContent = s.name;
+        suspectRoleDisplay.textContent = s.role;
+
+        renderSuspectList();
+        renderDialogue(s);
+        renderQuestions(s);
+        updateAccuseAvailability();
+      }
+
+      function renderDialogue(s) {
+        dialogueBody.innerHTML = "";
+        const asked = askedQuestions[s.id];
+        if (asked.size === 0) {
+          dialogueBody.innerHTML = `<div style="font-family:'Playfair Display',serif;font-style:italic;color:var(--smoke);font-size:14px;text-align:center;padding:30px;">${s.name} waits, arms folded. Ask your first question.</div>`;
+          return;
+        }
+        for (const idx of asked) {
+          const item = s.questions[idx];
+          const playerLine = document.createElement("div");
+          playerLine.className = "dialogue-line player";
+          playerLine.innerHTML = `<div class="bubble">${item.q}</div>`;
+          dialogueBody.appendChild(playerLine);
+
+          const suspectLine = document.createElement("div");
+          suspectLine.className = "dialogue-line";
+          suspectLine.innerHTML = `<div class="bubble${item.contradiction ? " contradiction-flag" : ""}">${item.a}</div>`;
+          dialogueBody.appendChild(suspectLine);
+        }
+        dialogueBody.scrollTop = dialogueBody.scrollHeight;
+      }
+
+      function renderQuestions(s) {
+        questionsEl.innerHTML = "";
+        s.questions.forEach((q, idx) => {
+          const btn = document.createElement("button");
+          btn.className = "q-btn";
+          btn.textContent = q.q;
+          const wasAsked = askedQuestions[s.id].has(idx);
+          btn.disabled = wasAsked;
+          if (wasAsked) btn.textContent += "  ✓";
+          btn.addEventListener("click", () => askQuestion(s, idx));
+          questionsEl.appendChild(btn);
+        });
+      }
+
+      function askQuestion(s, idx) {
+        askedQuestions[s.id].add(idx);
+        const item = s.questions[idx];
+
+        addClue(item.clue, !!item.contradiction);
+
+        renderDialogue(s);
+        renderQuestions(s);
+        renderSuspectList();
+        updateAccuseAvailability();
+      }
+
+      function addClue(text, isContradiction) {
+        if (cluesFound.some((c) => c.text === text)) return;
+        cluesFound.push({ text, contradiction: isContradiction });
+        renderClues();
+      }
+
+      function renderClues() {
+        if (cluesFound.length === 0) {
+          clueListEl.innerHTML =
+            '<div class="clue-empty">Clues you uncover during questioning will be pinned here.</div>';
+          return;
+        }
+        clueListEl.innerHTML = "";
+        for (const c of cluesFound) {
+          const card = document.createElement("div");
+          card.className =
+            "clue-card" + (c.contradiction ? " contradiction" : "");
+          card.innerHTML = `${c.contradiction ? '<div class="clue-stamp">CONTRADICTION</div>' : ""}${c.text}`;
+          clueListEl.appendChild(card);
+        }
+      }
+
+      function updateAccuseAvailability() {
+        const enough = suspectsQuestioned.size >= 3;
+        accuseBtn.disabled = !enough;
+        accuseHint.textContent = enough
+          ? "When you're ready, name your person of interest."
+          : "Question at least three people before accusing.";
+      }
+
+      // ════════════════════════════════════════════════════════════════
+      // ACCUSATION
+      // ════════════════════════════════════════════════════════════════
+      accuseBtn.addEventListener("click", () => {
+        accuseOptions.innerHTML = "";
+        for (const s of suspects) {
+          const btn = document.createElement("button");
+          btn.className = "accuse-option";
+          btn.innerHTML = `<strong>${s.name}</strong> — ${s.role}`;
+          btn.addEventListener("click", () => makeAccusation(s.id));
+          accuseOptions.appendChild(btn);
+        }
+        accuseModal.classList.add("show");
+      });
+
+      document.getElementById("cancel-accuse").addEventListener("click", () => {
+        accuseModal.classList.remove("show");
+      });
+
+      function makeAccusation(suspectId) {
+        accuseModal.classList.remove("show");
+        caseResolved = true;
+
+        const correct = suspectId === KILLER_ID;
+        const accused = suspects.find((s) => s.id === suspectId);
+        const killer = suspects.find((s) => s.id === KILLER_ID);
+
+        showResult(correct, accused, killer);
+      }
+
+      function showResult(correct, accused, killer) {
+        gameScreen.classList.remove("active");
+        resultScreenWrap.classList.add("active");
+
+        const icon = document.getElementById("result-icon");
+        const title = document.getElementById("result-title");
+        const text = document.getElementById("result-text");
+
+        if (correct) {
+          icon.textContent = "🧳";
+          title.textContent = "Case Closed";
+          text.innerHTML = `
+      <p style="margin-bottom:14px;">You were right. <strong>${killer.name}</strong> claimed she hadn't spoken to Iris in three days — but Sal Ferreira saw a parcel in her own handwriting delivered to Iris's car the morning she vanished. She'd been coordinating the exit the entire time.</p>
+      <p style="margin-bottom:14px;">Faced with the contradiction, Bex admitted it: Iris had decided weeks ago to walk away from the board fight entirely, on her own terms, with severance and leverage intact. Bex helped her vanish clean rather than let the board force her out empty-handed.</p>
+      <p>Iris surfaces three weeks later, very much alive, announcing a new company from somewhere with no extradition treaty for boardroom drama. The vote, as it turns out, never mattered.</p>
+    `;
+        } else {
+          icon.textContent = "✗";
+          title.textContent = "Wrong Call";
+          text.innerHTML = `
+      <p style="margin-bottom:14px;">You named <strong>${accused.name}</strong> — but nothing in their account ever broke under scrutiny. Whatever they knew or didn't, they weren't the one coordinating Iris's exit.</p>
+      <p style="margin-bottom:14px;">It was <strong>${killer.name}</strong> all along. She said she'd had no contact with Iris in three days — but Sal Ferreira saw a parcel in her handwriting delivered to Iris's car the very morning she vanished. That contradiction was the whole case.</p>
+      <p>The board votes Iris out in absentia. Somewhere, she's already stopped caring.</p>
+    `;
+        }
+      }
+
+      // ════════════════════════════════════════════════════════════════
+      // SCREEN FLOW
+      // ════════════════════════════════════════════════════════════════
+      document.getElementById("begin-btn").addEventListener("click", () => {
+        briefingScreen.classList.remove("active");
+        gameScreen.classList.add("active");
+        renderSuspectList();
+      });
+
+      document
+        .getElementById("play-again-btn")
+        .addEventListener("click", () => {
+          selectedSuspect = null;
+          askedQuestions = {};
+          suspects.forEach((s) => (askedQuestions[s.id] = new Set()));
+          cluesFound = [];
+          suspectsQuestioned = new Set();
+          caseResolved = false;
+
+          resultScreenWrap.classList.remove("active");
+          briefingScreen.classList.add("active");
+
+          emptyDialogue.style.display = "flex";
+          suspectHeader.style.display = "none";
+          questionsEl.style.display = "none";
+          dialogueBody.innerHTML = "";
+          dialogueBody.appendChild(emptyDialogue);
+          renderClues();
+        });
+
+      // Initial render
+      renderSuspectList();
+    </script>
+  </body>
+</html>
