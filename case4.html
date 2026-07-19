@@ -1,0 +1,1493 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>Dead Reckoning</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500&family=Special+Elite&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --paper: #ede3d0;
+            --paper-dark: #e0d3b8;
+            --ink: #1c1812;
+            --ink-soft: #3a332a;
+            --brass: #a8823c;
+            --blood: #8b2c2c;
+            --smoke: #6b6458;
+            --folder: #c9a876;
+            --sea: #2e4a52;
+            --sea-bright: #3f6877;
+        }
+
+        body {
+            background: var(--ink);
+            background-image:
+                radial-gradient(ellipse at 30% 20%,
+                    rgba(46, 74, 82, 0.09) 0%,
+                    transparent 50%),
+                radial-gradient(ellipse at 70% 80%,
+                    rgba(139, 44, 44, 0.05) 0%,
+                    transparent 50%);
+            min-height: 100vh;
+            font-family: "Inter", sans-serif;
+            color: var(--paper);
+            overflow-x: hidden;
+        }
+
+        /* ── Moonlit-deck vignette ── */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% 0%,
+                    rgba(63, 104, 119, 0.12) 0%,
+                    transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #app {
+            position: relative;
+            z-index: 1;
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+        }
+
+        #back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: "Special Elite", monospace;
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--brass);
+            text-decoration: none;
+            margin-bottom: 24px;
+            opacity: 0.85;
+            transition: opacity 0.15s, transform 0.15s;
+        }
+
+        #back-link:hover {
+            opacity: 1;
+            transform: translateX(-3px);
+        }
+
+        /* ── Header ── */
+        #case-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        #case-label {
+            font-family: "Special Elite", monospace;
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--brass);
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-family: "Playfair Display", serif;
+            font-weight: 900;
+            font-size: clamp(30px, 6vw, 54px);
+            color: var(--paper);
+            letter-spacing: 0.01em;
+            line-height: 1.05;
+        }
+
+        #case-sub {
+            font-family: "Playfair Display", serif;
+            font-style: italic;
+            font-weight: 500;
+            font-size: 15px;
+            color: var(--smoke);
+            margin-top: 6px;
+        }
+
+        /* ── Briefing screen ── */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        #briefing {
+            max-width: 700px;
+            margin: 0 auto;
+            background: var(--paper);
+            color: var(--ink);
+            border-radius: 2px;
+            padding: 40px 44px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        #briefing::before {
+            content: "CASE FILE";
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            font-family: "Special Elite", monospace;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--blood);
+            border: 1.5px solid var(--blood);
+            padding: 3px 10px;
+            transform: rotate(4deg);
+            opacity: 0.7;
+        }
+
+        #briefing h2 {
+            font-family: "Playfair Display", serif;
+            font-weight: 700;
+            font-size: 24px;
+            margin-bottom: 18px;
+            color: var(--ink);
+        }
+
+        #briefing p {
+            font-family: "Special Elite", monospace;
+            font-size: 14px;
+            line-height: 1.85;
+            color: var(--ink-soft);
+            margin-bottom: 16px;
+        }
+
+        #briefing .roster {
+            font-family: "Inter", sans-serif;
+            font-size: 12.5px;
+            color: var(--ink-soft);
+            background: var(--paper-dark);
+            padding: 16px 18px;
+            margin: 8px 0 18px;
+            line-height: 1.9;
+        }
+
+        #briefing .roster b {
+            font-weight: 700;
+        }
+
+        #briefing .signature {
+            font-family: "Playfair Display", serif;
+            font-style: italic;
+            text-align: right;
+            color: var(--smoke);
+            font-size: 14px;
+            margin-top: 24px;
+        }
+
+        .begin-btn {
+            display: block;
+            margin: 32px auto 0;
+            font-family: "Special Elite", monospace;
+            font-size: 13px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            background: var(--ink);
+            color: var(--paper);
+            border: none;
+            padding: 14px 38px;
+            cursor: pointer;
+            transition:
+                background 0.2s,
+                transform 0.15s;
+        }
+
+        .begin-btn:hover {
+            background: var(--blood);
+            transform: translateY(-2px);
+        }
+
+        /* ── Progress bar ── */
+        #progress-wrap {
+            max-width: 1140px;
+            margin: 0 auto 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        #progress-label {
+            font-family: "Special Elite", monospace;
+            font-size: 10.5px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--brass);
+            white-space: nowrap;
+        }
+
+        #progress-track {
+            flex: 1;
+            height: 6px;
+            background: rgba(237, 227, 208, 0.12);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--brass), #e8c468);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+
+        /* ── Main interrogation layout ── */
+        #main-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr 280px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 980px) {
+            #main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            #suspect-list {
+                order: 1;
+            }
+
+            #dialogue-panel {
+                order: 2;
+            }
+
+            #notebook {
+                order: 3;
+            }
+        }
+
+        /* ── Suspect list (left) ── */
+        #suspect-list {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            max-height: 720px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .panel-label {
+            font-family: "Special Elite", monospace;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--brass);
+            margin-bottom: 4px;
+        }
+
+        .suspect-card {
+            background: var(--paper);
+            color: var(--ink);
+            padding: 12px 14px;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            transition:
+                transform 0.15s,
+                border-color 0.2s,
+                opacity 0.2s;
+            position: relative;
+        }
+
+        .suspect-card:hover {
+            transform: translateX(4px);
+        }
+
+        .suspect-card.selected {
+            border-left-color: var(--blood);
+            background: var(--paper-dark);
+        }
+
+        .suspect-name {
+            font-family: "Playfair Display", serif;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .suspect-role {
+            font-family: "Special Elite", monospace;
+            font-size: 10.5px;
+            color: var(--smoke);
+            margin-top: 2px;
+        }
+
+        .suspect-asked-badge {
+            position: absolute;
+            top: 9px;
+            right: 10px;
+            font-size: 9.5px;
+            color: var(--brass);
+            font-family: "Special Elite", monospace;
+        }
+
+        .suspect-card.locked {
+            cursor: default;
+            background: rgba(237, 227, 208, 0.5);
+            opacity: 0.55;
+            border-left-color: transparent;
+        }
+
+        .suspect-card.locked:hover {
+            transform: none;
+        }
+
+        .suspect-card.locked .suspect-name {
+            color: #6a5f4d;
+        }
+
+        .lock-icon {
+            font-size: 11px;
+            margin-right: 4px;
+        }
+
+        .locked-note {
+            font-family: "Inter", sans-serif;
+            font-size: 10px;
+            color: var(--smoke);
+            margin-top: 4px;
+            line-height: 1.4;
+            font-style: italic;
+        }
+
+        .newly-unlocked {
+            animation: unlockPulse 1.4s ease;
+        }
+
+        @keyframes unlockPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(212, 175, 90, 0.7);
+            }
+
+            60% {
+                box-shadow: 0 0 0 10px rgba(212, 175, 90, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(212, 175, 90, 0);
+            }
+        }
+
+        /* ── Dialogue panel (center) ── */
+        #dialogue-panel {
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        #suspect-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 22px 26px;
+            border-bottom: 2px solid var(--ink);
+        }
+
+        #suspect-portrait {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Playfair Display", serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--paper);
+            flex-shrink: 0;
+        }
+
+        #suspect-header-text h3 {
+            font-family: "Playfair Display", serif;
+            font-size: 21px;
+            font-weight: 700;
+        }
+
+        #suspect-header-text p {
+            font-family: "Special Elite", monospace;
+            font-size: 11.5px;
+            color: var(--smoke);
+            margin-top: 2px;
+        }
+
+        #dialogue-body {
+            flex: 1;
+            padding: 22px 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 13px;
+            overflow-y: auto;
+            max-height: 360px;
+        }
+
+        .dialogue-line {
+            display: flex;
+            gap: 12px;
+            animation: fadeIn 0.35s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dialogue-line.player .bubble {
+            background: var(--ink);
+            color: var(--paper);
+            margin-left: auto;
+        }
+
+        .dialogue-line.player {
+            justify-content: flex-end;
+        }
+
+        .bubble {
+            font-family: "Special Elite", monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            background: var(--paper-dark);
+            padding: 11px 15px;
+            max-width: 80%;
+            position: relative;
+        }
+
+        .bubble.contradiction-flag {
+            border-left: 3px solid var(--blood);
+        }
+
+        .bubble.unlock-flag {
+            border-left: 3px solid var(--sea-bright);
+        }
+
+        #empty-dialogue {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Playfair Display", serif;
+            font-style: italic;
+            color: var(--smoke);
+            font-size: 14.5px;
+            text-align: center;
+            padding: 40px;
+        }
+
+        /* Questions */
+        #questions {
+            padding: 16px 26px 22px;
+            border-top: 1px solid rgba(28, 24, 18, 0.12);
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .q-btn {
+            font-family: "Inter", sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: left;
+            background: none;
+            border: 1.5px solid rgba(28, 24, 18, 0.18);
+            color: var(--ink);
+            padding: 10px 15px;
+            cursor: pointer;
+            transition:
+                background 0.15s,
+                border-color 0.15s;
+        }
+
+        .q-btn:hover {
+            background: rgba(28, 24, 18, 0.05);
+            border-color: var(--ink);
+        }
+
+        .q-btn:disabled {
+            opacity: 0.35;
+            cursor: default;
+        }
+
+        .q-btn:disabled:hover {
+            background: none;
+        }
+
+        /* ── Notebook (right) ── */
+        #notebook {
+            background: #2a241c;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        #notebook .panel-label {
+            color: var(--brass);
+            margin-bottom: 12px;
+        }
+
+        #clue-list {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            min-height: 60px;
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .clue-empty {
+            font-family: "Playfair Display", serif;
+            font-style: italic;
+            font-size: 12px;
+            color: var(--smoke);
+            line-height: 1.5;
+        }
+
+        .clue-card {
+            background: var(--paper);
+            color: var(--ink);
+            padding: 9px 11px;
+            font-family: "Special Elite", monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .clue-card.contradiction {
+            background: #f3e5e0;
+        }
+
+        .clue-card.unlock {
+            background: #e2eaec;
+        }
+
+        .clue-stamp {
+            position: absolute;
+            top: -8px;
+            right: -6px;
+            font-family: "Special Elite", monospace;
+            font-size: 7.5px;
+            letter-spacing: 0.1em;
+            padding: 3px 6px;
+            transform: rotate(8deg);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            color: #fff;
+        }
+
+        .clue-stamp.contradiction-stamp {
+            background: var(--blood);
+        }
+
+        .clue-stamp.unlock-stamp {
+            background: var(--sea-bright);
+        }
+
+        #accuse-section {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(237, 227, 208, 0.15);
+        }
+
+        #accuse-btn {
+            width: 100%;
+            font-family: "Special Elite", monospace;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            background: var(--blood);
+            color: #fff;
+            border: none;
+            padding: 13px;
+            cursor: pointer;
+            transition:
+                background 0.2s,
+                transform 0.15s;
+        }
+
+        #accuse-btn:hover {
+            background: #a83838;
+            transform: translateY(-2px);
+        }
+
+        #accuse-btn:disabled {
+            background: var(--smoke);
+            cursor: default;
+            transform: none;
+        }
+
+        #accuse-hint {
+            font-family: "Inter", sans-serif;
+            font-size: 10px;
+            color: var(--smoke);
+            text-align: center;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        /* ── Accusation modal ── */
+        #accuse-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 24px;
+        }
+
+        #accuse-modal.show {
+            display: flex;
+        }
+
+        #accuse-modal-inner {
+            background: var(--paper);
+            color: var(--ink);
+            max-width: 440px;
+            width: 100%;
+            padding: 32px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        #accuse-modal-inner h3 {
+            font-family: "Playfair Display", serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        #accuse-modal-inner p {
+            font-family: "Special Elite", monospace;
+            font-size: 12.5px;
+            color: var(--smoke);
+            margin-bottom: 18px;
+        }
+
+        .accuse-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            font-family: "Inter", sans-serif;
+            font-size: 13.5px;
+            font-weight: 500;
+            background: none;
+            border: 1.5px solid rgba(28, 24, 18, 0.2);
+            padding: 11px 15px;
+            margin-bottom: 7px;
+            cursor: pointer;
+            transition:
+                background 0.15s,
+                border-color 0.15s;
+        }
+
+        .accuse-option:hover {
+            background: rgba(28, 24, 18, 0.05);
+            border-color: var(--ink);
+        }
+
+        #cancel-accuse {
+            display: block;
+            margin: 14px auto 0;
+            background: none;
+            border: none;
+            font-family: "Inter", sans-serif;
+            font-size: 12px;
+            color: var(--smoke);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* ── Result screen ── */
+        #result-screen {
+            max-width: 660px;
+            margin: 0 auto;
+            background: var(--paper);
+            color: var(--ink);
+            padding: 44px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        #result-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        #result-title {
+            font-family: "Playfair Display", serif;
+            font-weight: 900;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        #result-text {
+            font-family: "Special Elite", monospace;
+            font-size: 14px;
+            line-height: 1.85;
+            color: var(--ink-soft);
+            text-align: left;
+            margin-bottom: 24px;
+        }
+
+        #play-again-btn {
+            font-family: "Special Elite", monospace;
+            font-size: 12px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            background: var(--ink);
+            color: var(--paper);
+            border: none;
+            padding: 13px 32px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #play-again-btn:hover {
+            background: var(--blood);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <a id="back-link" href="index.html">← Back to the desk</a>
+
+        <div id="case-header">
+            <div id="case-label">Case File No. 22</div>
+            <h1>Dead Reckoning</h1>
+            <div id="case-sub">Murder Aboard the MS Solveig</div>
+        </div>
+
+        <!-- Briefing -->
+        <div class="screen active" id="briefing-screen">
+            <div id="briefing">
+                <h2>The Situation</h2>
+                <p>
+                    Five nights at sea, no ports until landfall, and somewhere
+                    around 1:00 AM, Magnus Thorne — shipping magnate, owner of the
+                    Solveig, and a man with a gift for making enemies politely —
+                    went over the railing of the observation lounge onto the deck
+                    below. Two decks up. No witnesses who'll admit to seeing it
+                    happen.
+                </p>
+                <p>
+                    The captain's dinner had broken up around midnight. By the time
+                    the body was found at 1:15, most of the ship's small circle of
+                    people who actually knew Magnus well were somewhere between
+                    their cabins and the bar — or so they say.
+                </p>
+                <div class="roster">
+                    <b>Known to be aboard and connected to Magnus:</b><br />
+                    His wife. His captain. His first mate. His ship's doctor. His
+                    biographer. His estranged son. His head steward. His security
+                    officer. Eight people, one truth, and four days left at sea to
+                    find it before landfall makes this someone else's problem.
+                </div>
+                <p>
+                    Start with whoever seems most obvious. What they tell you will
+                    open doors to the people they mention — sometimes by name,
+                    sometimes by accident. Follow the thread wherever it actually
+                    leads, not just where it's easiest to look.
+                </p>
+                <p>
+                    When the contradiction is undeniable, you'll only get one name.
+                    Choose it well.
+                </p>
+                <div class="signature">
+                    — Handed to you by the first mate, oddly eager to help
+                </div>
+            </div>
+            <button class="begin-btn" id="begin-btn">
+                Begin the interrogation
+            </button>
+        </div>
+
+        <!-- Main Game -->
+        <div class="screen" id="game-screen">
+            <div id="progress-wrap">
+                <span id="progress-label">Suspects Unlocked</span>
+                <div id="progress-track">
+                    <div id="progress-fill"></div>
+                </div>
+                <span id="progress-count"
+                    style="font-family:'Special Elite',monospace;font-size:10.5px;color:var(--smoke);"></span>
+            </div>
+
+            <div id="main-layout">
+                <div id="suspect-list">
+                    <div class="panel-label">Persons Aboard</div>
+                </div>
+
+                <div id="dialogue-panel">
+                    <div id="suspect-header" style="display: none">
+                        <div id="suspect-portrait"></div>
+                        <div id="suspect-header-text">
+                            <h3 id="suspect-name-display"></h3>
+                            <p id="suspect-role-display"></p>
+                        </div>
+                    </div>
+                    <div id="dialogue-body">
+                        <div id="empty-dialogue">
+                            Select someone from the left to begin questioning them.
+                        </div>
+                    </div>
+                    <div id="questions" style="display: none"></div>
+                </div>
+
+                <div id="notebook">
+                    <div class="panel-label">Your Notebook</div>
+                    <div id="clue-list">
+                        <div class="clue-empty">
+                            Clues you uncover during questioning will be pinned here.
+                        </div>
+                    </div>
+                    <div id="accuse-section">
+                        <button id="accuse-btn">Make an accusation</button>
+                        <div id="accuse-hint">
+                            Question at least five suspects before accusing.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result -->
+        <div class="screen" id="result-screen-wrap">
+            <div id="result-screen">
+                <div id="result-icon"></div>
+                <div id="result-title"></div>
+                <div id="result-text"></div>
+                <button id="play-again-btn">Start a new case</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accusation modal -->
+    <div id="accuse-modal">
+        <div id="accuse-modal-inner">
+            <h3>Who did it?</h3>
+            <p>This is your one and only accusation. Choose carefully.</p>
+            <div id="accuse-options"></div>
+            <button id="cancel-accuse">Not yet — keep questioning</button>
+        </div>
+    </div>
+
+    <script>
+        // ════════════════════════════════════════════════════════════════
+        // CASE DATA — "Dead Reckoning"
+        //
+        // The killer is REUBEN OKAFOR (first mate). Tell: he claims he was
+        // on the bridge with Captain Voss continuously from 12:30 AM until
+        // the body was found — but security officer FELIX's badge logs show
+        // him badging OUT of the bridge at 12:45 and back IN at 1:05, a
+        // twenty-minute gap he never accounts for. Captain Voss's own
+        // account only confirms Reuben was there before 12:30 and after
+        // 1:05 — Voss was dozing in the chart room for a stretch and
+        // assumed Reuben never left, but never actually checked. That makes
+        // Voss's testimony an honest gap, not a lie — while Reuben's is a
+        // deliberate, checkable contradiction once cross-referenced with
+        // Felix's logs.
+        //
+        // GATING GRAPH:
+        //   Open from start: ingrid, captain, steward
+        //   steward  -> unlocks reuben   (saw him near the lounge)
+        //   ingrid   -> unlocks son      (will dispute)
+        //   captain  -> unlocks doctor   (odd medical visit that week)
+        //   reuben OR son -> unlocks biographer (manuscript dispute)
+        //   doctor   -> unlocks security (camera blind spots)
+        // ════════════════════════════════════════════════════════════════
+
+        const suspects = [
+            {
+                id: "ingrid",
+                name: "Ingrid Thorne",
+                role: "Magnus's Wife",
+                initial: "I",
+                locked: false,
+                questions: [
+                    {
+                        q: "Where were you around 1:00 AM?",
+                        a: "In our suite, alone, reading. Magnus and I hadn't shared a cabin in months, if you must know. I didn't hear anything until the commotion started.",
+                        clue: "Ingrid says she was alone in her suite at 1:00 AM and heard nothing until the body was found.",
+                    },
+                    {
+                        q: "How was your marriage, honestly?",
+                        a: "Honestly? Ending. There's a prenuptial agreement that expires in eleven days — after that, I'd have walked away with considerably more than I will now. Draw whatever conclusion you like.",
+                        clue: "Ingrid had a financial motive: a prenup expiring in eleven days that would have entitled her to far more.",
+                    },
+                    {
+                        q: "Did you and Tobias get along?",
+                        a: "About as well as a stepmother and a disinherited son ever do. He blames me for Magnus cutting him off, which is absurd — that decision was made years before I was in the picture.",
+                        clue: "Ingrid mentions tension with Tobias, Magnus's disinherited son, who blames her for the rift.",
+                        unlocks: "son",
+                    },
+                    {
+                        q: "Did Magnus have any enemies aboard?",
+                        a: "Magnus collected enemies the way other men collect stamps. Ask the captain about the inspection paperwork sometime — that conversation was getting heated before dinner even started.",
+                        clue: "Ingrid hints at tension between Magnus and Captain Voss over inspection paperwork.",
+                    },
+                ],
+            },
+            {
+                id: "captain",
+                name: "Capt. Casper Voss",
+                role: "Ship's Captain",
+                initial: "C",
+                locked: false,
+                questions: [
+                    {
+                        q: "Where were you between midnight and 1:15 AM?",
+                        a: "On the bridge, mostly. I'll admit I dozed in the chart room for a stretch somewhere past midnight — long voyage, thin crew. Reuben had the watch, I assumed he held it the whole time.",
+                        clue: "Captain Voss admits dozing in the chart room and assuming, without checking, that Reuben held the watch throughout.",
+                    },
+                    {
+                        q: "Did Magnus have concerns about your license?",
+                        a: "He'd found some irregularities in old inspection paperwork, yes. Threatened to bring it to the board. I won't pretend that didn't worry me, but I've sailed forty years — I wasn't about to throw that away over a railing argument.",
+                        clue: "Magnus was threatening to expose irregularities in Captain Voss's license paperwork — a real motive.",
+                    },
+                    {
+                        q: "Was anyone treated medically that week?",
+                        a: "Magnus, oddly. Saw Dr. Castellan twice in three days, very hush about it. None of my business what for, but it was out of character — the man hated doctors.",
+                        clue: "Magnus saw Dr. Castellan twice that week under unusually secretive circumstances.",
+                        unlocks: "doctor",
+                    },
+                    {
+                        q: "How well do you know Reuben?",
+                        a: "Good first mate. Ambitious, maybe more than the rank usually allows for, but reliable. I've never had reason to doubt his word until you started asking like this.",
+                        clue: "Captain Voss vouches for Reuben's reliability, though notes his ambition.",
+                    },
+                ],
+            },
+            {
+                id: "steward",
+                name: "Marie Dupont",
+                role: "Head Steward",
+                initial: "M",
+                locked: false,
+                questions: [
+                    {
+                        q: "What do you see, working this ship at night?",
+                        a: "Everything, eventually. People forget stewards exist once they're done being served. I was doing turn-down service on the upper deck around 12:45 when I saw Reuben near the observation lounge — odd, since he's meant to be on the bridge that hour.",
+                        clue: "Marie saw Reuben near the observation lounge around 12:45 AM, despite his watch duty on the bridge.",
+                        unlocks: "reuben",
+                    },
+                    {
+                        q: "Did you hear anything unusual that night?",
+                        a: "Raised voices from Magnus's suite earlier, before dinner. Couldn't make out words, just tone. By 1 AM the halls were quiet, until they very much weren't.",
+                        clue: "Marie heard raised voices from Magnus's suite before dinner, though couldn't identify what was said.",
+                    },
+                    {
+                        q: "How did Magnus treat the crew?",
+                        a: "Generously to some, cruelly to others, depending on his mood that hour. Mr. Aldana in security could tell you more — Magnus had him pulling old footage for something just yesterday.",
+                        clue: "Marie mentions Magnus had security officer Felix Aldana pulling old footage recently.",
+                    },
+                    {
+                        q: "Did you see anyone else out of place that night?",
+                        a: "Dr. Castellan, near the medical bay later than usual, maybe half past midnight. Probably nothing — she keeps odd hours, it's the job.",
+                        clue: "Marie saw Dr. Castellan near the medical bay around 12:30 AM, though considers it unremarkable.",
+                    },
+                ],
+            },
+            {
+                id: "reuben",
+                name: "Reuben Okafor",
+                role: "First Mate",
+                initial: "R",
+                locked: true,
+                unlockedBy: "steward",
+                unlockNote: "Unlocked after Marie placed him near the lounge.",
+                questions: [
+                    {
+                        q: "Where were you between 12:30 and 1:15 AM?",
+                        a: "On the bridge the entire time, with Captain Voss. Ask him yourself. I never left my post — that's not the kind of thing a first mate does on a voyage like this.",
+                        clue: "Reuben claims he was on the bridge continuously from 12:30 to 1:15 AM, with the captain as witness.",
+                        contradiction: true,
+                        contradictsWith: "security",
+                        contradictionNote:
+                            "Reuben claims he never left the bridge between 12:30 and 1:15 — but Felix's badge logs show him out from 12:45 to 1:05, a gap he never accounts for.",
+                    },
+                    {
+                        q: "What was your relationship with Ingrid Thorne?",
+                        a: "Professional. She's the owner's wife, I'm the first mate. I don't see what that has to do with anything.",
+                        clue: "Reuben describes his relationship with Ingrid as strictly professional.",
+                    },
+                    {
+                        q: "Did you and Magnus get along?",
+                        a: "Well enough. He liked that I ran a tight ship when the captain was occupied elsewhere. I had no complaints with the man, no reason to want him gone.",
+                        clue: "Reuben claims a good working relationship with Magnus and denies any motive.",
+                    },
+                    {
+                        q: "Were you on the upper deck at any point that night?",
+                        a: "No. I told you, the bridge, all night. Whoever says otherwise is mistaken.",
+                        clue: "Reuben flatly denies being on the upper deck at any point that night.",
+                    },
+                ],
+            },
+            {
+                id: "son",
+                name: "Tobias Lindqvist",
+                role: "Magnus's Estranged Son",
+                initial: "T",
+                locked: true,
+                unlockedBy: "ingrid",
+                unlockNote: "Unlocked after Ingrid mentioned the will dispute.",
+                questions: [
+                    {
+                        q: "Why are you aboard, given the estrangement?",
+                        a: "Invited, believe it or not — first time in six years. I think he wanted to make amends, or gloat, hard to say with my father. I came hoping it was the first one.",
+                        clue: "Tobias was invited aboard for the first time in six years, hoping for reconciliation.",
+                    },
+                    {
+                        q: "Were you disinherited?",
+                        a: "Cut out entirely, years ago, over a business decision he never forgave me for. If he died tonight without changing that, I get nothing. That's a strange motive to hand a man you suspect.",
+                        clue: "Tobias was fully disinherited; without a will change, he had no financial motive to want Magnus dead.",
+                    },
+                    {
+                        q: "Where were you at 1:00 AM?",
+                        a: "In the ship's bar, nursing a drink I didn't want, working up the nerve to actually talk to him at breakfast. The bartender can vouch — I was there past 1:30.",
+                        clue: "Tobias was at the ship's bar past 1:30 AM, with the bartender able to confirm it.",
+                    },
+                    {
+                        q: "Did your father mention changing his will this trip?",
+                        a: "He hinted at it, actually, the first night. Said he wanted to 'fix some old mistakes.' I let myself believe that meant me. Maybe it did, maybe it didn't. I'll never know now.",
+                        clue: "Magnus had hinted at revising his will this trip, possibly in Tobias's favor.",
+                    },
+                ],
+            },
+            {
+                id: "doctor",
+                name: "Dr. Wren Castellan",
+                role: "Ship's Doctor",
+                initial: "W",
+                locked: true,
+                unlockedBy: "captain",
+                unlockNote:
+                    "Unlocked after the captain mentioned Magnus's secretive medical visits.",
+                questions: [
+                    {
+                        q: "Why was Magnus seeing you twice this week?",
+                        a: "Patient confidentiality usually covers that, but given the circumstances — he knew about an incident from my last posting, a malpractice matter I'd rather not have followed me here. He wasn't subtle about using it as leverage.",
+                        clue: "Magnus was blackmailing Dr. Castellan over a malpractice incident from her previous posting.",
+                    },
+                    {
+                        q: "What did he want from you?",
+                        a: "Favorable medical sign-offs for an insurance matter, mostly. Petty, in the scheme of things, but humiliating. I won't pretend I didn't resent him for it.",
+                        clue: "Magnus pressured Dr. Castellan for favorable medical sign-offs, exploiting the blackmail.",
+                    },
+                    {
+                        q: "Where were you around 1:00 AM?",
+                        a: "In the medical bay, restocking, until close to 1:30. Marie saw me there, I believe, doing her rounds. It's tedious work but it keeps a record — supply logs are timestamped.",
+                        clue: "Dr. Castellan was in the medical bay until around 1:30 AM, with timestamped supply logs to confirm it.",
+                    },
+                    {
+                        q: "Did you tell anyone else about the blackmail?",
+                        a: "No one. It wasn't exactly a conversation I wanted to have twice. I'm almost relieved it ends with him, whatever that says about me.",
+                        clue: "Dr. Castellan kept the blackmail private and admits relief at Magnus's death.",
+                    },
+                ],
+            },
+            {
+                id: "biographer",
+                name: "Lena Marsh",
+                role: "Magnus's Biographer",
+                initial: "L",
+                locked: true,
+                unlockedBy: "reuben",
+                unlockNote:
+                    "Unlocked after testimony surfaced about a manuscript dispute.",
+                questions: [
+                    {
+                        q: "What's your relationship to Magnus?",
+                        a: "I've spent two years writing his authorized biography. Had, I should say — he pulled funding and access three weeks ago, right after I found something in his shipping records he didn't want public.",
+                        clue: "Magnus cut off Lena's biography funding three weeks ago after she found damaging shipping records.",
+                    },
+                    {
+                        q: "What did you find?",
+                        a: "Evidence of cargo manifests that didn't match what actually left port, going back a decade. I haven't published anything. I was still deciding what to do with it when he died.",
+                        clue: "Lena discovered a decade of falsified cargo manifests but hadn't published anything yet.",
+                    },
+                    {
+                        q: "Where were you at 1:00 AM?",
+                        a: "In my cabin, transcribing interview notes — ironically, notes for a book that no longer has a subject willing to cooperate. No one can confirm that, I was alone, I know how that sounds.",
+                        clue: "Lena claims she was alone in her cabin transcribing notes at 1:00 AM, with no one to confirm it.",
+                    },
+                    {
+                        q: "Were you angry with him for cutting you off?",
+                        a: "Angry, embarrassed, professionally gutted — yes, all of it. But killing him doesn't get my two years back, and it doesn't get the manifests published either. If anything, it buries the story with him.",
+                        clue: "Lena argues Magnus's death works against her interests, since it buries the story she'd uncovered.",
+                    },
+                ],
+            },
+            {
+                id: "security",
+                name: "Felix Aldana",
+                role: "Security Officer",
+                initial: "F",
+                locked: true,
+                unlockedBy: "doctor",
+                unlockNote:
+                    "Unlocked after the doctor's mention of camera blind spots near the medical bay.",
+                questions: [
+                    {
+                        q: "Walk me through the bridge badge logs for that night.",
+                        a: "Standard access logging — everyone badges in and out of restricted areas, bridge included. The night in question, Reuben's badge clocks him out at 12:45 and back in at 1:05. Twenty-minute gap. I didn't think much of it until you asked.",
+                        clue: "Felix confirms Reuben's badge logs show him out of the bridge from 12:45 to 1:05 AM.",
+                        contradiction: true,
+                        contradictsWith: "reuben",
+                        contradictionNote:
+                            "Felix's badge logs put Reuben off the bridge from 12:45 to 1:05 — directly contradicting Reuben's claim that he never left his post that night.",
+                    },
+                    {
+                        q: "Why did Magnus have you pulling old footage recently?",
+                        a: "He asked me to review footage from a few weeks back — wouldn't say why. Found nothing remarkable that I could see. Whatever he was looking for, he kept it to himself.",
+                        clue: "Magnus had Felix review old security footage recently, for reasons he never explained.",
+                    },
+                    {
+                        q: "Are there blind spots in the camera coverage?",
+                        a: "A few. The medical bay corridor has a dead zone near the supply closet — budget cuts, never got fixed. The observation lounge itself is fully covered, for what little good that did Magnus.",
+                        clue: "There's a known camera blind spot near the medical bay supply closet, though the observation lounge itself is fully covered.",
+                    },
+                    {
+                        q: "Does the lounge footage show anything from that night?",
+                        a: "That's the strange part — the lounge camera glitched out around 12:50, lost about fifteen minutes of recording. Equipment fault, near as I can tell, nothing deliberate. Just bad timing.",
+                        clue: "The observation lounge camera glitched and lost roughly fifteen minutes of footage starting around 12:50 AM.",
+                    },
+                ],
+            },
+        ];
+
+        const KILLER_ID = "reuben";
+        const MIN_QUESTIONED_TO_ACCUSE = 5;
+
+        // ════════════════════════════════════════════════════════════════
+        // STATE
+        // ════════════════════════════════════════════════════════════════
+        let selectedSuspect = null;
+        let askedQuestions = {}; // suspectId -> Set of question indices asked
+        let cluesFound = []; // {text, contradiction, unlock}
+        let suspectsQuestioned = new Set();
+        let unlockedIds = new Set();
+        let justUnlocked = new Set(); // for pulse animation, cleared after render
+        let caseResolved = false;
+
+        suspects.forEach((s) => {
+            askedQuestions[s.id] = new Set();
+            if (!s.locked) unlockedIds.add(s.id);
+        });
+
+        // ════════════════════════════════════════════════════════════════
+        // DOM REFS
+        // ════════════════════════════════════════════════════════════════
+        const briefingScreen = document.getElementById("briefing-screen");
+        const gameScreen = document.getElementById("game-screen");
+        const resultScreenWrap = document.getElementById("result-screen-wrap");
+        const suspectListEl = document.getElementById("suspect-list");
+        const dialogueBody = document.getElementById("dialogue-body");
+        const questionsEl = document.getElementById("questions");
+        const suspectHeader = document.getElementById("suspect-header");
+        const suspectPortrait = document.getElementById("suspect-portrait");
+        const suspectNameDisplay = document.getElementById(
+            "suspect-name-display",
+        );
+        const suspectRoleDisplay = document.getElementById(
+            "suspect-role-display",
+        );
+        const emptyDialogue = document.getElementById("empty-dialogue");
+        const clueListEl = document.getElementById("clue-list");
+        const accuseBtn = document.getElementById("accuse-btn");
+        const accuseHint = document.getElementById("accuse-hint");
+        const accuseModal = document.getElementById("accuse-modal");
+        const accuseOptions = document.getElementById("accuse-options");
+        const progressFill = document.getElementById("progress-fill");
+        const progressCount = document.getElementById("progress-count");
+
+        // ════════════════════════════════════════════════════════════════
+        // RENDER
+        // ════════════════════════════════════════════════════════════════
+        function renderSuspectList() {
+            suspectListEl
+                .querySelectorAll(".suspect-card")
+                .forEach((el) => el.remove());
+            for (const s of suspects) {
+                const isLocked = !unlockedIds.has(s.id);
+                const card = document.createElement("div");
+                card.className =
+                    "suspect-card" +
+                    (selectedSuspect === s.id ? " selected" : "") +
+                    (isLocked ? " locked" : "") +
+                    (justUnlocked.has(s.id) ? " newly-unlocked" : "");
+
+                if (isLocked) {
+                    card.innerHTML = `
+        <div class="suspect-name"><span class="lock-icon">🔒</span>${s.name}</div>
+        <div class="suspect-role">${s.role}</div>
+        <div class="locked-note">Locked — keep questioning to find the thread that leads here.</div>
+      `;
+                } else {
+                    card.innerHTML = `
+        <div class="suspect-name">${s.name}</div>
+        <div class="suspect-role">${s.role}</div>
+        ${askedQuestions[s.id].size > 0 ? `<div class="suspect-asked-badge">${askedQuestions[s.id].size}/${s.questions.length} asked</div>` : ""}
+      `;
+                    card.addEventListener("click", () => selectSuspect(s.id));
+                }
+                suspectListEl.appendChild(card);
+            }
+            justUnlocked.clear();
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const pct = Math.round((unlockedIds.size / suspects.length) * 100);
+            progressFill.style.width = pct + "%";
+            progressCount.textContent = `${unlockedIds.size} / ${suspects.length}`;
+        }
+
+        function selectSuspect(id) {
+            if (!unlockedIds.has(id)) return;
+            selectedSuspect = id;
+            suspectsQuestioned.add(id);
+            const s = suspects.find((x) => x.id === id);
+
+            emptyDialogue.style.display = "none";
+            suspectHeader.style.display = "flex";
+            questionsEl.style.display = "flex";
+
+            suspectPortrait.textContent = s.initial;
+            suspectNameDisplay.textContent = s.name;
+            suspectRoleDisplay.textContent = s.role;
+
+            renderSuspectList();
+            renderDialogue(s);
+            renderQuestions(s);
+            updateAccuseAvailability();
+        }
+
+        function renderDialogue(s) {
+            dialogueBody.innerHTML = "";
+            const asked = askedQuestions[s.id];
+            if (asked.size === 0) {
+                dialogueBody.innerHTML = `<div style="font-family:'Playfair Display',serif;font-style:italic;color:var(--smoke);font-size:13.5px;text-align:center;padding:30px;">${s.name} waits. Ask your first question.</div>`;
+                return;
+            }
+            for (const idx of asked) {
+                const item = s.questions[idx];
+                const playerLine = document.createElement("div");
+                playerLine.className = "dialogue-line player";
+                playerLine.innerHTML = `<div class="bubble">${item.q}</div>`;
+                dialogueBody.appendChild(playerLine);
+
+                const flagClass = item.contradiction
+                    ? " contradiction-flag"
+                    : item.unlocks
+                        ? " unlock-flag"
+                        : "";
+                const suspectLine = document.createElement("div");
+                suspectLine.className = "dialogue-line";
+                suspectLine.innerHTML = `<div class="bubble${flagClass}">${item.a}</div>`;
+                dialogueBody.appendChild(suspectLine);
+            }
+            dialogueBody.scrollTop = dialogueBody.scrollHeight;
+        }
+
+        function renderQuestions(s) {
+            questionsEl.innerHTML = "";
+            s.questions.forEach((q, idx) => {
+                const btn = document.createElement("button");
+                btn.className = "q-btn";
+                btn.textContent = q.q;
+                const wasAsked = askedQuestions[s.id].has(idx);
+                btn.disabled = wasAsked;
+                if (wasAsked) btn.textContent += "  ✓";
+                btn.addEventListener("click", () => askQuestion(s, idx));
+                questionsEl.appendChild(btn);
+            });
+        }
+
+        function askQuestion(s, idx) {
+            askedQuestions[s.id].add(idx);
+            const item = s.questions[idx];
+
+            addClue(item.clue, !!item.contradiction, !!item.unlocks);
+
+            if (item.unlocks && !unlockedIds.has(item.unlocks)) {
+                unlockedIds.add(item.unlocks);
+                justUnlocked.add(item.unlocks);
+            }
+
+            renderDialogue(s);
+            renderQuestions(s);
+            renderSuspectList();
+            updateAccuseAvailability();
+        }
+
+        function addClue(text, isContradiction, isUnlock) {
+            if (cluesFound.some((c) => c.text === text)) return;
+            cluesFound.push({
+                text,
+                contradiction: isContradiction,
+                unlock: isUnlock,
+            });
+            renderClues();
+        }
+
+        function renderClues() {
+            if (cluesFound.length === 0) {
+                clueListEl.innerHTML =
+                    '<div class="clue-empty">Clues you uncover during questioning will be pinned here.</div>';
+                return;
+            }
+            clueListEl.innerHTML = "";
+            for (const c of cluesFound) {
+                const card = document.createElement("div");
+                let cls = "clue-card";
+                let stamp = "";
+                if (c.contradiction) {
+                    cls += " contradiction";
+                    stamp =
+                        '<div class="clue-stamp contradiction-stamp">CONTRADICTION</div>';
+                } else if (c.unlock) {
+                    cls += " unlock";
+                    stamp = '<div class="clue-stamp unlock-stamp">LEAD</div>';
+                }
+                card.className = cls;
+                card.innerHTML = `${stamp}${c.text}`;
+                clueListEl.appendChild(card);
+            }
+        }
+
+        function updateAccuseAvailability() {
+            const enough = suspectsQuestioned.size >= MIN_QUESTIONED_TO_ACCUSE;
+            accuseBtn.disabled = !enough;
+            accuseHint.textContent = enough
+                ? "When you're ready, name your suspect."
+                : `Question at least ${MIN_QUESTIONED_TO_ACCUSE} suspects before accusing. (${suspectsQuestioned.size}/${MIN_QUESTIONED_TO_ACCUSE})`;
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // ACCUSATION
+        // ════════════════════════════════════════════════════════════════
+        accuseBtn.addEventListener("click", () => {
+            accuseOptions.innerHTML = "";
+            for (const s of suspects) {
+                if (!unlockedIds.has(s.id)) continue;
+                const btn = document.createElement("button");
+                btn.className = "accuse-option";
+                btn.innerHTML = `<strong>${s.name}</strong> — ${s.role}`;
+                btn.addEventListener("click", () => makeAccusation(s.id));
+                accuseOptions.appendChild(btn);
+            }
+            accuseModal.classList.add("show");
+        });
+
+        document.getElementById("cancel-accuse").addEventListener("click", () => {
+            accuseModal.classList.remove("show");
+        });
+
+        function makeAccusation(suspectId) {
+            accuseModal.classList.remove("show");
+            caseResolved = true;
+
+            const correct = suspectId === KILLER_ID;
+            const accused = suspects.find((s) => s.id === suspectId);
+            const killer = suspects.find((s) => s.id === KILLER_ID);
+
+            showResult(correct, accused, killer);
+        }
+
+        function showResult(correct, accused, killer) {
+            gameScreen.classList.remove("active");
+            resultScreenWrap.classList.add("active");
+
+            const icon = document.getElementById("result-icon");
+            const title = document.getElementById("result-title");
+            const text = document.getElementById("result-text");
+
+            if (correct) {
+                icon.textContent = "⚓";
+                title.textContent = "Case Closed";
+                text.innerHTML = `
+      <p style="margin-bottom:14px;">You were right. <strong>${killer.name}</strong> swore he never left the bridge between 12:30 and 1:15 AM — but Felix Aldana's badge logs told a different story: out at 12:45, back in at 1:05. Twenty minutes unaccounted for, and the observation lounge camera conveniently "glitched" for almost exactly that window.</p>
+      <p style="margin-bottom:14px;">Captain Voss's account never actually lied — he simply hadn't checked. He'd dozed off and assumed Reuben held the watch the whole time. It was Reuben's own insistence on a perfect alibi that gave him away; an honest gap would have sounded far less rehearsed.</p>
+      <p style="margin-bottom:14px;">Faced with the logs, Reuben confessed: Ingrid had told him, in confidence, about the will Magnus intended to rewrite — one that would have cut them both out of any future together once the prenup expired favorably for her. He'd convinced himself it was the only window he'd get.</p>
+      <p>The Solveig makes landfall two days later, missing one officer and carrying considerably more paperwork than it left port with.</p>
+    `;
+            } else {
+                icon.textContent = "✗";
+                title.textContent = "Wrong Call";
+                text.innerHTML = `
+      <p style="margin-bottom:14px;">You accused <strong>${accused.name}</strong> — but nothing in their account ever broke under real scrutiny. Motive isn't proof, and theirs never crossed into a checkable lie.</p>
+      <p style="margin-bottom:14px;">The real culprit was <strong>${killer.name}</strong>. He insisted he never left the bridge from 12:30 to 1:15 — but Felix's badge logs placed him off the bridge from 12:45 to 1:05, the same window the lounge camera mysteriously lost its footage. That was the thread that actually held weight.</p>
+      <p>The Solveig reaches port with the case still open, and Reuben still standing watch — for now.</p>
+    `;
+            }
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // SCREEN FLOW
+        // ════════════════════════════════════════════════════════════════
+        document.getElementById("begin-btn").addEventListener("click", () => {
+            briefingScreen.classList.remove("active");
+            gameScreen.classList.add("active");
+            renderSuspectList();
+        });
+
+        document
+            .getElementById("play-again-btn")
+            .addEventListener("click", () => {
+                selectedSuspect = null;
+                askedQuestions = {};
+                suspects.forEach((s) => (askedQuestions[s.id] = new Set()));
+                cluesFound = [];
+                suspectsQuestioned = new Set();
+                unlockedIds = new Set();
+                justUnlocked = new Set();
+                suspects.forEach((s) => {
+                    if (!s.locked) unlockedIds.add(s.id);
+                });
+                caseResolved = false;
+
+                resultScreenWrap.classList.remove("active");
+                briefingScreen.classList.add("active");
+
+                emptyDialogue.style.display = "flex";
+                suspectHeader.style.display = "none";
+                questionsEl.style.display = "none";
+                dialogueBody.innerHTML = "";
+                dialogueBody.appendChild(emptyDialogue);
+                renderClues();
+            });
+
+        // Initial render
+        renderSuspectList();
+    </script>
+</body>
+
+</html>
