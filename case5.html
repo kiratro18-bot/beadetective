@@ -1,0 +1,1267 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>The Aldgate Folio</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500&family=Special+Elite&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --paper: #ede3d0;
+            --paper-dark: #e0d3b8;
+            --ink: #1c1812;
+            --ink-soft: #3a332a;
+            --brass: #a8823c;
+            --blood: #8b2c2c;
+            --smoke: #6b6458;
+            --library: #2c3e2d;
+            --library-bright: #3d5440;
+        }
+
+        body {
+            background: var(--ink);
+            background-image:
+                radial-gradient(ellipse at 25% 15%, rgba(44, 62, 45, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 75% 85%, rgba(139, 44, 44, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
+            font-family: "Inter", sans-serif;
+            color: var(--paper);
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(44, 62, 45, 0.12) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #app {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+        }
+
+        #back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: "Special Elite", monospace;
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--brass);
+            text-decoration: none;
+            margin-bottom: 24px;
+            opacity: 0.85;
+            transition: opacity 0.15s, transform 0.15s;
+        }
+
+        #back-link:hover {
+            opacity: 1;
+            transform: translateX(-3px);
+        }
+
+        /* ── Header ── */
+        #case-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        #case-label {
+            font-family: "Special Elite", monospace;
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--brass);
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-family: "Playfair Display", serif;
+            font-weight: 900;
+            font-size: clamp(28px, 5.5vw, 50px);
+            color: var(--paper);
+            letter-spacing: 0.01em;
+            line-height: 1.05;
+        }
+
+        #case-sub {
+            font-family: "Playfair Display", serif;
+            font-style: italic;
+            font-weight: 500;
+            font-size: 15px;
+            color: var(--smoke);
+            margin-top: 6px;
+        }
+
+        /* ── Difficulty badge ── */
+        .difficulty-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            font-family: "Special Elite", monospace;
+            font-size: 10.5px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--library-bright);
+            border: 1px solid rgba(61, 84, 64, 0.5);
+            padding: 4px 12px;
+            border-radius: 2px;
+        }
+
+        .difficulty-pips {
+            display: flex;
+            gap: 3px;
+        }
+
+        .pip {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(61, 84, 64, 0.3);
+        }
+
+        .pip.filled {
+            background: var(--library-bright);
+        }
+
+        /* ── Screens ── */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* ── Briefing ── */
+        #briefing {
+            max-width: 680px;
+            margin: 0 auto;
+            background: var(--paper);
+            color: var(--ink);
+            border-radius: 2px;
+            padding: 40px 44px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        #briefing::before {
+            content: "CASE FILE";
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            font-family: "Special Elite", monospace;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--blood);
+            border: 1.5px solid var(--blood);
+            padding: 3px 10px;
+            transform: rotate(4deg);
+            opacity: 0.7;
+        }
+
+        #briefing h2 {
+            font-family: "Playfair Display", serif;
+            font-weight: 700;
+            font-size: 22px;
+            margin-bottom: 16px;
+            color: var(--ink);
+        }
+
+        #briefing p {
+            font-family: "Special Elite", monospace;
+            font-size: 14px;
+            line-height: 1.85;
+            color: var(--ink-soft);
+            margin-bottom: 14px;
+        }
+
+        #briefing .detail-box {
+            background: var(--paper-dark);
+            border-left: 3px solid var(--library);
+            padding: 14px 16px;
+            margin: 16px 0;
+            font-family: "Special Elite", monospace;
+            font-size: 13px;
+            line-height: 1.75;
+            color: var(--ink-soft);
+        }
+
+        #briefing .detail-box b {
+            color: var(--ink);
+            font-weight: 700;
+        }
+
+        #briefing .signature {
+            font-family: "Playfair Display", serif;
+            font-style: italic;
+            text-align: right;
+            color: var(--smoke);
+            font-size: 14px;
+            margin-top: 22px;
+        }
+
+        .begin-btn {
+            display: block;
+            margin: 32px auto 0;
+            font-family: "Special Elite", monospace;
+            font-size: 13px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            background: var(--ink);
+            color: var(--paper);
+            border: none;
+            padding: 14px 38px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+        }
+
+        .begin-btn:hover {
+            background: var(--blood);
+            transform: translateY(-2px);
+        }
+
+        /* ── Main layout ── */
+        #main-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr 280px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            #main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            #suspect-list {
+                order: 1;
+            }
+
+            #dialogue-panel {
+                order: 2;
+            }
+
+            #notebook {
+                order: 3;
+            }
+        }
+
+        /* ── Suspect list ── */
+        #suspect-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .panel-label {
+            font-family: "Special Elite", monospace;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--brass);
+            margin-bottom: 4px;
+        }
+
+        .suspect-card {
+            background: var(--paper);
+            color: var(--ink);
+            padding: 14px 16px;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            transition: transform 0.15s, border-color 0.2s;
+            position: relative;
+        }
+
+        .suspect-card:hover {
+            transform: translateX(4px);
+        }
+
+        .suspect-card.selected {
+            border-left-color: var(--blood);
+            background: var(--paper-dark);
+        }
+
+        .suspect-name {
+            font-family: "Playfair Display", serif;
+            font-weight: 700;
+            font-size: 15.5px;
+        }
+
+        .suspect-role {
+            font-family: "Special Elite", monospace;
+            font-size: 10.5px;
+            color: var(--smoke);
+            margin-top: 2px;
+        }
+
+        .suspect-asked-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 9.5px;
+            color: var(--brass);
+            font-family: "Special Elite", monospace;
+        }
+
+        /* ── Dialogue panel ── */
+        #dialogue-panel {
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        #suspect-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 22px 28px;
+            border-bottom: 2px solid var(--ink);
+        }
+
+        #suspect-portrait {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Playfair Display", serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--paper);
+            flex-shrink: 0;
+        }
+
+        #suspect-header-text h3 {
+            font-family: "Playfair Display", serif;
+            font-size: 21px;
+            font-weight: 700;
+        }
+
+        #suspect-header-text p {
+            font-family: "Special Elite", monospace;
+            font-size: 11.5px;
+            color: var(--smoke);
+            margin-top: 2px;
+        }
+
+        #dialogue-body {
+            flex: 1;
+            padding: 22px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 13px;
+            overflow-y: auto;
+            max-height: 360px;
+        }
+
+        .dialogue-line {
+            display: flex;
+            gap: 12px;
+            animation: fadeIn 0.35s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dialogue-line.player {
+            justify-content: flex-end;
+        }
+
+        .dialogue-line.player .bubble {
+            background: var(--ink);
+            color: var(--paper);
+            margin-left: auto;
+        }
+
+        .bubble {
+            font-family: "Special Elite", monospace;
+            font-size: 13px;
+            line-height: 1.65;
+            background: var(--paper-dark);
+            padding: 11px 15px;
+            max-width: 80%;
+        }
+
+        .bubble.contradiction-flag {
+            border-left: 3px solid var(--blood);
+        }
+
+        .bubble.key-clue-flag {
+            border-left: 3px solid var(--library-bright);
+        }
+
+        #empty-dialogue {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Playfair Display", serif;
+            font-style: italic;
+            color: var(--smoke);
+            font-size: 14.5px;
+            text-align: center;
+            padding: 40px;
+        }
+
+        #questions {
+            padding: 16px 28px 22px;
+            border-top: 1px solid rgba(28, 24, 18, 0.12);
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .q-btn {
+            font-family: "Inter", sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: left;
+            background: none;
+            border: 1.5px solid rgba(28, 24, 18, 0.18);
+            color: var(--ink);
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .q-btn:hover {
+            background: rgba(28, 24, 18, 0.05);
+            border-color: var(--ink);
+        }
+
+        .q-btn:disabled {
+            opacity: 0.35;
+            cursor: default;
+        }
+
+        .q-btn:disabled:hover {
+            background: none;
+        }
+
+        /* ── Notebook ── */
+        #notebook {
+            background: #2a241c;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        #notebook .panel-label {
+            color: var(--brass);
+            margin-bottom: 12px;
+        }
+
+        #clue-list {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            min-height: 60px;
+            max-height: 440px;
+            overflow-y: auto;
+        }
+
+        .clue-empty {
+            font-family: "Playfair Display", serif;
+            font-style: italic;
+            font-size: 12px;
+            color: var(--smoke);
+            line-height: 1.5;
+        }
+
+        .clue-card {
+            background: var(--paper);
+            color: var(--ink);
+            padding: 9px 11px;
+            font-family: "Special Elite", monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .clue-card.key-clue {
+            background: #e2ece3;
+        }
+
+        .clue-card.contradiction {
+            background: #f3e5e0;
+        }
+
+        .clue-stamp {
+            position: absolute;
+            top: -8px;
+            right: -6px;
+            font-family: "Special Elite", monospace;
+            font-size: 7.5px;
+            letter-spacing: 0.1em;
+            padding: 3px 6px;
+            transform: rotate(8deg);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            color: #fff;
+        }
+
+        .clue-stamp.key {
+            background: var(--library-bright);
+        }
+
+        .clue-stamp.contra {
+            background: var(--blood);
+        }
+
+        /* Key evidence counter */
+        #key-evidence-count {
+            font-family: "Special Elite", monospace;
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            color: var(--library-bright);
+            text-align: center;
+            margin-top: 10px;
+            padding: 6px;
+            border: 1px solid rgba(61, 84, 64, 0.3);
+        }
+
+        #accuse-section {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(237, 227, 208, 0.15);
+        }
+
+        #accuse-btn {
+            width: 100%;
+            font-family: "Special Elite", monospace;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            background: var(--blood);
+            color: #fff;
+            border: none;
+            padding: 13px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+        }
+
+        #accuse-btn:hover {
+            background: #a83838;
+            transform: translateY(-2px);
+        }
+
+        #accuse-btn:disabled {
+            background: var(--smoke);
+            cursor: default;
+            transform: none;
+        }
+
+        #accuse-hint {
+            font-family: "Inter", sans-serif;
+            font-size: 10px;
+            color: var(--smoke);
+            text-align: center;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        /* ── Modal ── */
+        #accuse-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 24px;
+        }
+
+        #accuse-modal.show {
+            display: flex;
+        }
+
+        #accuse-modal-inner {
+            background: var(--paper);
+            color: var(--ink);
+            max-width: 420px;
+            width: 100%;
+            padding: 32px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        #accuse-modal-inner h3 {
+            font-family: "Playfair Display", serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        #accuse-modal-inner p {
+            font-family: "Special Elite", monospace;
+            font-size: 12.5px;
+            color: var(--smoke);
+            margin-bottom: 18px;
+        }
+
+        .accuse-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            font-family: "Inter", sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            background: none;
+            border: 1.5px solid rgba(28, 24, 18, 0.2);
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .accuse-option:hover {
+            background: rgba(28, 24, 18, 0.05);
+            border-color: var(--ink);
+        }
+
+        #cancel-accuse {
+            display: block;
+            margin: 14px auto 0;
+            background: none;
+            border: none;
+            font-family: "Inter", sans-serif;
+            font-size: 12px;
+            color: var(--smoke);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* ── Result ── */
+        #result-screen {
+            max-width: 660px;
+            margin: 0 auto;
+            background: var(--paper);
+            color: var(--ink);
+            padding: 44px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        #result-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        #result-title {
+            font-family: "Playfair Display", serif;
+            font-weight: 900;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        #result-text {
+            font-family: "Special Elite", monospace;
+            font-size: 14px;
+            line-height: 1.85;
+            color: var(--ink-soft);
+            text-align: left;
+            margin-bottom: 24px;
+        }
+
+        #play-again-btn {
+            font-family: "Special Elite", monospace;
+            font-size: 12px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            background: var(--ink);
+            color: var(--paper);
+            border: none;
+            padding: 13px 32px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #play-again-btn:hover {
+            background: var(--blood);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <a id="back-link" href="index.html">← Back to the desk</a>
+
+        <div id="case-header">
+            <div id="case-label">Case File No. 31</div>
+            <h1>The Aldgate Folio</h1>
+            <div id="case-sub">A Theft from the Special Collections Vault</div>
+            <div class="difficulty-badge">
+                Difficulty
+                <div class="difficulty-pips">
+                    <div class="pip filled"></div>
+                    <div class="pip filled"></div>
+                    <div class="pip filled"></div>
+                    <div class="pip"></div>
+                    <div class="pip"></div>
+                </div>
+                Moderate–Hard
+            </div>
+        </div>
+
+        <!-- Briefing -->
+        <div class="screen active" id="briefing-screen">
+            <div id="briefing">
+                <h2>The Situation</h2>
+                <p>
+                    The Aldgate University Special Collections vault holds one of the
+                    most valuable objects ever to pass through this city — a 1623 First
+                    Folio of Shakespeare, on loan from the Harwick estate for a
+                    three-month exhibition. Insured for £8 million. Access restricted
+                    to key-card holders only, with a digital log of every entry.
+                </p>
+                <div class="detail-box">
+                    <b>What's missing:</b> The Aldgate Folio — one of only 235 known
+                    surviving copies of the First Folio.<br />
+                    <b>Window:</b> Saturday 6:00 PM (last confirmed sighting at vault
+                    check) to Sunday 8:00 AM (discovered missing on opening).<br />
+                    <b>Entry log:</b> No key-card entries after 5:58 PM Saturday.
+                    Either the log was bypassed — or someone on the inside knew how.
+                </div>
+                <p>
+                    Five people had the means, the access, or a reason. The truth
+                    is in the details, not the motives — more than one person here
+                    wanted that book gone. What you're looking for is the one whose
+                    story doesn't hold together once you push on it from two directions
+                    at once.
+                </p>
+                <p>
+                    This one won't give itself away on the first question. Take your
+                    time with each person. Some threads only connect once you've pulled
+                    on both ends.
+                </p>
+                <div class="signature">— Filed by the Head of Security, Sunday morning</div>
+            </div>
+            <button class="begin-btn" id="begin-btn">Begin questioning</button>
+        </div>
+
+        <!-- Main Game -->
+        <div class="screen" id="game-screen">
+            <div id="main-layout">
+                <div id="suspect-list">
+                    <div class="panel-label">Persons of Interest</div>
+                </div>
+
+                <div id="dialogue-panel">
+                    <div id="suspect-header" style="display:none;">
+                        <div id="suspect-portrait"></div>
+                        <div id="suspect-header-text">
+                            <h3 id="suspect-name-display"></h3>
+                            <p id="suspect-role-display"></p>
+                        </div>
+                    </div>
+                    <div id="dialogue-body">
+                        <div id="empty-dialogue">Select someone from the left to begin questioning.</div>
+                    </div>
+                    <div id="questions" style="display:none;"></div>
+                </div>
+
+                <div id="notebook">
+                    <div class="panel-label">Your Notebook</div>
+                    <div id="clue-list">
+                        <div class="clue-empty">Clues you uncover will appear here. Green cards are key evidence — find
+                            enough to make your case.</div>
+                    </div>
+                    <div id="key-evidence-count">Key evidence: 0 / 2 found</div>
+                    <div id="accuse-section">
+                        <button id="accuse-btn" disabled>Name the thief</button>
+                        <div id="accuse-hint">Question more suspects — the answer requires evidence from more than one
+                            source.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result -->
+        <div class="screen" id="result-screen-wrap">
+            <div id="result-screen">
+                <div id="result-icon"></div>
+                <div id="result-title"></div>
+                <div id="result-text"></div>
+                <button id="play-again-btn">Read the case again</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accusation modal -->
+    <div id="accuse-modal">
+        <div id="accuse-modal-inner">
+            <h3>Who took the Folio?</h3>
+            <p>You have one accusation. The evidence should point one way before you use it.</p>
+            <div id="accuse-options"></div>
+            <button id="cancel-accuse">Not yet — keep questioning</button>
+        </div>
+    </div>
+
+    <script>
+        // ════════════════════════════════════════════════════════════════
+        // CASE: The Aldgate Folio
+        //
+        // THE THIEF: Prof. Edmund Hale (curator).
+        //
+        // DIFFICULTY — MODERATE/HARD:
+        // The contradiction requires assembling TWO independent clues
+        // from TWO different suspects:
+        //
+        //   CLUE A (from Owen / security guard):
+        //     He saw "the professor's car" in the staff lot around 11:45 PM —
+        //     a detail not in his incident report, mentioned offhandedly.
+        //
+        //   CLUE B (from Nadia / research assistant):
+        //     She saw Hale at a 24-hour print shop near campus at 11:40 PM
+        //     Saturday — and that the shop is known for high-quality facsimile
+        //     printing. She found it odd enough to mention.
+        //
+        // Neither clue alone is conclusive. Together they place Hale on
+        // campus at 11:40–11:45 PM when he claims he never left home after 7.
+        // His motive (a secret sale to a Tokyo collector, planned months
+        // in advance) only fully surfaces in his OWN third question.
+        //
+        // The accuse button only unlocks once both key clues are found.
+        // ════════════════════════════════════════════════════════════════
+
+        const suspects = [
+            {
+                id: "hale",
+                name: "Prof. Edmund Hale",
+                role: "Special Collections Curator",
+                initial: "E",
+                questions: [
+                    {
+                        q: "When did you last see the Folio?",
+                        a: "Friday afternoon, during my routine check. I locked the vault myself at close of business, 5:45 PM. Everything was in order — I'd stake my career on it.",
+                        clue: "Hale confirms he locked the vault at 5:45 PM Friday and claims everything was in order.",
+                    },
+                    {
+                        q: "Where were you Saturday evening?",
+                        a: "Home, from seven o'clock onwards. I had a glass of wine, read, went to bed around eleven. I live alone, so I can't offer you a witness, but I can offer you my word.",
+                        clue: "Hale says he was home alone from 7:00 PM Saturday — no alibi witness.",
+                    },
+                    {
+                        q: "Had anyone approached you about the Folio's value?",
+                        a: "There was... an inquiry. Several months ago. A private collector in Tokyo — Kenji Mori, very reputable — expressed interest in acquiring a copy. I told him the Folio wasn't mine to sell. I probably should have mentioned that to the library director. I didn't.",
+                        clue: "A Tokyo collector named Kenji Mori contacted Hale months ago about acquiring the Folio. Hale did not disclose this to the library.",
+                    },
+                    {
+                        q: "Do you know what a high-quality facsimile of a First Folio would cost?",
+                        a: "I— yes. There are printers who can produce them to a standard that would pass casual inspection. For archival-grade work, you'd want somewhere with proper lithographic equipment. Not something you'd find easily at short notice.",
+                        clue: "Hale is familiar with high-quality facsimile printing and knows where to obtain it — a detail he reveals with unusual specificity.",
+                    },
+                ],
+            },
+            {
+                id: "nadia",
+                name: "Nadia Osei",
+                role: "PhD Student & Research Assistant",
+                initial: "N",
+                questions: [
+                    {
+                        q: "How often do you access the Special Collections vault?",
+                        a: "Three, four times a week for my dissertation. I have after-hours key-card access through to 9 PM, but I hadn't needed it lately. My last entry was Thursday afternoon.",
+                        clue: "Nadia had regular vault access but her last entry was Thursday — the key-card log supports this.",
+                    },
+                    {
+                        q: "Where were you Saturday evening?",
+                        a: "At home working until about eleven, then I went out to get coffee — there's a late-night place I use when I'm stuck. I was back by midnight. Nothing worth noting until you called me in.",
+                        clue: "Nadia was home until 11 PM Saturday, then out briefly near midnight for coffee.",
+                    },
+                    {
+                        q: "Did you see anyone connected to the university that night?",
+                        a: "Actually — yes. I saw Professor Hale coming out of the print shop on Aldgate Lane, the one that does archival reproductions. It was around 11:40. I thought it was strange — he's not exactly a late-night person, and that shop is known for its facsimile work. I almost said something but he seemed distracted.",
+                        clue: "Nadia saw Hale leaving an archival print shop on Aldgate Lane at 11:40 PM Saturday — a shop known for high-quality facsimile reproductions.",
+                        isKeyClue: true,
+                    },
+                    {
+                        q: "Did you ever hear Professor Hale discuss the Folio's value or any outside interest in it?",
+                        a: "He mentioned once, in passing, that there'd been 'considerable interest from overseas.' I didn't think much of it. He seemed almost proud about it, which struck me as odd for something that wasn't his to sell.",
+                        clue: "Hale mentioned 'considerable interest from overseas' in the Folio — Nadia found his pride about it oddly possessive.",
+                    },
+                ],
+            },
+            {
+                id: "crane",
+                name: "Victor Crane",
+                role: "Rare Books Dealer & Visiting Appraiser",
+                initial: "V",
+                questions: [
+                    {
+                        q: "Why were you brought in to appraise the Folio?",
+                        a: "The Harwick estate requested an independent valuation before the loan period ended. Standard practice. I've handled three First Folios in my career — there's almost no one better placed to assess it.",
+                        clue: "Crane was commissioned by the Harwick estate for an independent appraisal — a legitimate and expected role.",
+                    },
+                    {
+                        q: "Where were you Saturday night?",
+                        a: "Room 412 at the Aldgate Arms. I ordered room service at quarter past ten — lamb, if it matters — and didn't leave until breakfast. The hotel's key-card system will confirm I didn't exit after nine. I rather enjoy my evenings in.",
+                        clue: "Crane's hotel key-card confirms he was in his room from 9 PM; a room-service order at 10:15 PM independently corroborates this.",
+                    },
+                    {
+                        q: "Did anyone approach you about acquiring the Folio outside legitimate channels?",
+                        a: "I've had conversations — I won't pretend otherwise. In this trade you're always being asked about things that aren't available. I told anyone who asked that this particular book wasn't on the market and left it there.",
+                        clue: "Crane admits to having been approached about the Folio's availability but says he declined to facilitate anything irregular.",
+                    },
+                    {
+                        q: "In your assessment, could a facsimile have been substituted without immediate detection?",
+                        a: "For a few days, possibly. A very good reproduction under low light, in a sealed display case — a lay visitor wouldn't know. A specialist would spot it within minutes of handling it. The paper alone gives it away.",
+                        clue: "Crane confirms a high-quality facsimile could pass casual inspection for a short period but would fail any expert examination.",
+                    },
+                ],
+            },
+            {
+                id: "voss",
+                name: "Dr. Petra Voss",
+                role: "Library Director",
+                initial: "P",
+                questions: [
+                    {
+                        q: "Who had override access to the vault's key-card system?",
+                        a: "Myself, Professor Hale, and the head of IT security. The override codes are changed quarterly. The last rotation was six weeks ago — only those three people have the current codes.",
+                        clue: "Vault override access is held by Dr. Voss, Prof. Hale, and the IT head. Codes were last changed six weeks ago.",
+                    },
+                    {
+                        q: "Where were you Saturday evening?",
+                        a: "The Faculty of Arts annual dinner, Pemberton Hall. I gave the opening remarks at seven, sat through four speeches I didn't enjoy, and left at ten to midnight. The vice-chancellor will confirm, along with about eighty others.",
+                        clue: "Dr. Voss was at a faculty dinner from 7 PM until nearly midnight, with roughly eighty witnesses including the vice-chancellor.",
+                    },
+                    {
+                        q: "Is the Folio insured, and who benefits?",
+                        a: "The university holds a rider on the Harwick loan — we're covered for full replacement value. I won't pretend the payout wouldn't be useful; we've had three years of budget cuts. But I was in a room with eighty people when this happened.",
+                        clue: "The university's insurance covers the Folio's full value. Dr. Voss acknowledges the payout would help the budget but has an airtight alibi.",
+                    },
+                    {
+                        q: "Have you noticed anything unusual about Professor Hale's behaviour recently?",
+                        a: "Distracted, the last few weeks. More territorial about the vault than usual — he started doing unscheduled checks outside his normal rounds. I put it down to anxiety about the exhibition. Perhaps I should have asked him directly.",
+                        clue: "Dr. Voss noticed Hale acting distracted and unusually territorial about the vault in the weeks leading up to the theft.",
+                    },
+                ],
+            },
+            {
+                id: "owen",
+                name: "Owen Garrett",
+                role: "Night Security Guard",
+                initial: "O",
+                questions: [
+                    {
+                        q: "Walk me through your Saturday night rounds.",
+                        a: "Clocked on at ten. Standard circuit — main hall, reading rooms, east corridor, vault exterior check at eleven-thirty. Everything locked, nothing unusual on the door sensor. Logged it and moved on.",
+                        clue: "Owen's official log records a vault exterior check at 11:30 PM Saturday — everything appeared normal.",
+                    },
+                    {
+                        q: "Did you see anyone in or around the building after hours?",
+                        a: "The building was dark. But — and I didn't put this in the report because I didn't think it mattered — I noticed Professor Hale's car in the staff lot when I did my exterior pass. Around quarter to twelve. It's a distinctive car, old Volvo estate, dark green. I'd know it anywhere.",
+                        clue: "Owen saw Prof. Hale's car — a distinctive dark-green Volvo estate — in the staff car park at approximately 11:45 PM Saturday. This detail was omitted from his official report.",
+                        isKeyClue: true,
+                    },
+                    {
+                        q: "Why didn't you include the car in your report?",
+                        a: "Staff sometimes come back for forgotten things. I didn't see anyone enter the building — just the car. Didn't seem worth escalating. In hindsight I wish I'd knocked on the window.",
+                        clue: "Owen explains the omission as an oversight — he saw no one enter the building, only the car, and didn't consider it significant at the time.",
+                    },
+                    {
+                        q: "Is there any way into the vault that wouldn't register on the key-card log?",
+                        a: "There's a maintenance corridor that runs behind the vault — used for HVAC and electrical. It doesn't have a card reader, just a standard key. The curator has a physical key for emergencies. It's not on the digital log because it predates the system.",
+                        clue: "A maintenance corridor behind the vault uses a physical key — predating the digital log — and the curator holds one for emergencies. Entry via this route would be completely unrecorded.",
+                    },
+                ],
+            },
+        ];
+
+        const KILLER_ID = "hale";
+        const KEY_CLUE_IDS = new Set(); // filled at runtime by isKeyClue flags
+        const MIN_Q = 3; // min suspects questioned before accusing
+
+        // ════════════════════════════════════════════════════════════════
+        // STATE
+        // ════════════════════════════════════════════════════════════════
+        let selectedSuspect = null;
+        let askedQuestions = {};
+        let cluesFound = [];
+        let keyCluesFound = 0;
+        let suspectsQuestioned = new Set();
+        let caseResolved = false;
+
+        suspects.forEach(s => { askedQuestions[s.id] = new Set(); });
+
+        // ════════════════════════════════════════════════════════════════
+        // DOM
+        // ════════════════════════════════════════════════════════════════
+        const briefingScreen = document.getElementById("briefing-screen");
+        const gameScreen = document.getElementById("game-screen");
+        const resultScreenWrap = document.getElementById("result-screen-wrap");
+        const suspectListEl = document.getElementById("suspect-list");
+        const dialogueBody = document.getElementById("dialogue-body");
+        const questionsEl = document.getElementById("questions");
+        const suspectHeader = document.getElementById("suspect-header");
+        const suspectPortrait = document.getElementById("suspect-portrait");
+        const suspectNameDisplay = document.getElementById("suspect-name-display");
+        const suspectRoleDisplay = document.getElementById("suspect-role-display");
+        const emptyDialogue = document.getElementById("empty-dialogue");
+        const clueListEl = document.getElementById("clue-list");
+        const accuseBtn = document.getElementById("accuse-btn");
+        const accuseHint = document.getElementById("accuse-hint");
+        const accuseModal = document.getElementById("accuse-modal");
+        const accuseOptions = document.getElementById("accuse-options");
+        const keyCount = document.getElementById("key-evidence-count");
+
+        // ════════════════════════════════════════════════════════════════
+        // RENDER
+        // ════════════════════════════════════════════════════════════════
+        function renderSuspectList() {
+            suspectListEl.querySelectorAll(".suspect-card").forEach(el => el.remove());
+            for (const s of suspects) {
+                const card = document.createElement("div");
+                card.className = "suspect-card" + (selectedSuspect === s.id ? " selected" : "");
+                card.innerHTML = `
+            <div class="suspect-name">${s.name}</div>
+            <div class="suspect-role">${s.role}</div>
+            ${askedQuestions[s.id].size > 0
+                        ? `<div class="suspect-asked-badge">${askedQuestions[s.id].size}/${s.questions.length} asked</div>`
+                        : ""}
+          `;
+                card.addEventListener("click", () => selectSuspect(s.id));
+                suspectListEl.appendChild(card);
+            }
+        }
+
+        function selectSuspect(id) {
+            selectedSuspect = id;
+            suspectsQuestioned.add(id);
+            const s = suspects.find(x => x.id === id);
+
+            emptyDialogue.style.display = "none";
+            suspectHeader.style.display = "flex";
+            questionsEl.style.display = "flex";
+
+            suspectPortrait.textContent = s.initial;
+            suspectNameDisplay.textContent = s.name;
+            suspectRoleDisplay.textContent = s.role;
+
+            renderSuspectList();
+            renderDialogue(s);
+            renderQuestions(s);
+            updateAccuse();
+        }
+
+        function renderDialogue(s) {
+            dialogueBody.innerHTML = "";
+            const asked = askedQuestions[s.id];
+            if (asked.size === 0) {
+                dialogueBody.innerHTML = `<div style="font-family:'Playfair Display',serif;font-style:italic;color:var(--smoke);font-size:14px;text-align:center;padding:30px;">${s.name} looks up from their chair. Ask your first question.</div>`;
+                return;
+            }
+            for (const idx of asked) {
+                const item = s.questions[idx];
+                const playerLine = document.createElement("div");
+                playerLine.className = "dialogue-line player";
+                playerLine.innerHTML = `<div class="bubble">${item.q}</div>`;
+                dialogueBody.appendChild(playerLine);
+
+                const flagClass = item.isKeyClue ? " key-clue-flag" : "";
+                const suspectLine = document.createElement("div");
+                suspectLine.className = "dialogue-line";
+                suspectLine.innerHTML = `<div class="bubble${flagClass}">${item.a}</div>`;
+                dialogueBody.appendChild(suspectLine);
+            }
+            dialogueBody.scrollTop = dialogueBody.scrollHeight;
+        }
+
+        function renderQuestions(s) {
+            questionsEl.innerHTML = "";
+            s.questions.forEach((q, idx) => {
+                const btn = document.createElement("button");
+                btn.className = "q-btn";
+                btn.textContent = q.q;
+                const wasAsked = askedQuestions[s.id].has(idx);
+                btn.disabled = wasAsked;
+                if (wasAsked) btn.textContent += "  ✓";
+                btn.addEventListener("click", () => askQuestion(s, idx));
+                questionsEl.appendChild(btn);
+            });
+        }
+
+        function askQuestion(s, idx) {
+            askedQuestions[s.id].add(idx);
+            const item = s.questions[idx];
+            addClue(item.clue, !!item.isKeyClue, false);
+            if (item.isKeyClue) keyCluesFound++;
+            renderDialogue(s);
+            renderQuestions(s);
+            renderSuspectList();
+            updateAccuse();
+        }
+
+        function addClue(text, isKey, isContradiction) {
+            if (cluesFound.some(c => c.text === text)) return;
+            cluesFound.push({ text, key: isKey, contradiction: isContradiction });
+            renderClues();
+        }
+
+        function renderClues() {
+            if (cluesFound.length === 0) {
+                clueListEl.innerHTML = '<div class="clue-empty">Clues you uncover will appear here.</div>';
+                return;
+            }
+            clueListEl.innerHTML = "";
+            for (const c of cluesFound) {
+                const card = document.createElement("div");
+                let cls = "clue-card";
+                let stamp = "";
+                if (c.key) {
+                    cls += " key-clue";
+                    stamp = '<div class="clue-stamp key">KEY</div>';
+                } else if (c.contradiction) {
+                    cls += " contradiction";
+                    stamp = '<div class="clue-stamp contra">CONFLICT</div>';
+                }
+                card.className = cls;
+                card.innerHTML = `${stamp}${c.text}`;
+                clueListEl.appendChild(card);
+            }
+            keyCount.textContent = `Key evidence: ${keyCluesFound} / 2 found`;
+        }
+
+        function updateAccuse() {
+            const hasEnoughSuspects = suspectsQuestioned.size >= MIN_Q;
+            const hasKeyEvidence = keyCluesFound >= 2;
+            const canAccuse = hasEnoughSuspects && hasKeyEvidence;
+
+            accuseBtn.disabled = !canAccuse;
+
+            if (hasKeyEvidence && hasEnoughSuspects) {
+                accuseHint.textContent = "You have the evidence. Name your suspect.";
+            } else if (hasKeyEvidence) {
+                accuseHint.textContent = `Key evidence assembled. Question ${MIN_Q - suspectsQuestioned.size} more suspect(s) before accusing.`;
+            } else {
+                accuseHint.textContent = `Find both pieces of key evidence first — they won't come from the same source.`;
+            }
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // ACCUSATION
+        // ════════════════════════════════════════════════════════════════
+        accuseBtn.addEventListener("click", () => {
+            accuseOptions.innerHTML = "";
+            for (const s of suspects) {
+                const btn = document.createElement("button");
+                btn.className = "accuse-option";
+                btn.innerHTML = `<strong>${s.name}</strong> — ${s.role}`;
+                btn.addEventListener("click", () => makeAccusation(s.id));
+                accuseOptions.appendChild(btn);
+            }
+            accuseModal.classList.add("show");
+        });
+
+        document.getElementById("cancel-accuse").addEventListener("click", () => {
+            accuseModal.classList.remove("show");
+        });
+
+        function makeAccusation(suspectId) {
+            accuseModal.classList.remove("show");
+            caseResolved = true;
+            const correct = suspectId === KILLER_ID;
+            const accused = suspects.find(s => s.id === suspectId);
+            const culprit = suspects.find(s => s.id === KILLER_ID);
+            showResult(correct, accused, culprit);
+        }
+
+        function showResult(correct, accused, culprit) {
+            gameScreen.classList.remove("active");
+            resultScreenWrap.classList.add("active");
+
+            const icon = document.getElementById("result-icon");
+            const title = document.getElementById("result-title");
+            const text = document.getElementById("result-text");
+
+            if (correct) {
+                icon.textContent = "📖";
+                title.textContent = "Case Closed";
+                text.innerHTML = `
+            <p style="margin-bottom:14px;">You were right. <strong>Professor Edmund Hale</strong> had been planning this for months. Kenji Mori's inquiry last spring planted the idea — an archival-grade facsimile in the display case, the real Folio quietly exported before anyone examined it closely enough to notice the switch.</p>
+            <p style="margin-bottom:14px;">The two details that broke it: Nadia placing him at the facsimile print shop at 11:40 PM, and Owen's car sighting at 11:45 — independent, uncoordinated, and together impossible to explain by coincidence. He used the emergency maintenance corridor key, which predated the digital logging system entirely.</p>
+            <p style="margin-bottom:14px;">The Folio was recovered at a freight forwarding depot near Heathrow before it could leave the country. Mori denied prior knowledge of the theft; investigators disagree.</p>
+            <p>Hale's career, his collection, his reputation — all of it gone for a book that wasn't his. The university is already reviewing vault protocols. The Harwick estate is not returning its call.</p>
+          `;
+            } else {
+                icon.textContent = "✗";
+                title.textContent = "Wrong Call";
+                text.innerHTML = `
+            <p style="margin-bottom:14px;">You named <strong>${accused.name}</strong> — but the case doesn't hold. Their account never fractured under pressure, and no evidence placed them at the building that night.</p>
+            <p style="margin-bottom:14px;">The thief was <strong>Professor Edmund Hale</strong>. Two clues, from two people who had no reason to coordinate: Nadia saw him leaving the archival print shop at 11:40 PM, and Owen spotted his car in the staff lot at 11:45. He claimed to be home by seven and never mentioned either. Those two data points, assembled together, were the whole case.</p>
+            <p>The Folio reached a freight depot near Heathrow before it was intercepted. It came very close to vanishing entirely — and so did the truth.</p>
+          `;
+            }
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // SCREEN FLOW
+        // ════════════════════════════════════════════════════════════════
+        document.getElementById("begin-btn").addEventListener("click", () => {
+            briefingScreen.classList.remove("active");
+            gameScreen.classList.add("active");
+            renderSuspectList();
+        });
+
+        document.getElementById("play-again-btn").addEventListener("click", () => {
+            selectedSuspect = null;
+            askedQuestions = {};
+            suspects.forEach(s => { askedQuestions[s.id] = new Set(); });
+            cluesFound = [];
+            keyCluesFound = 0;
+            suspectsQuestioned = new Set();
+            caseResolved = false;
+
+            resultScreenWrap.classList.remove("active");
+            briefingScreen.classList.add("active");
+
+            emptyDialogue.style.display = "flex";
+            suspectHeader.style.display = "none";
+            questionsEl.style.display = "none";
+            dialogueBody.innerHTML = "";
+            dialogueBody.appendChild(emptyDialogue);
+            renderClues();
+            updateAccuse();
+        });
+
+        renderSuspectList();
+        updateAccuse();
+    </script>
+</body>
+
+</html>
