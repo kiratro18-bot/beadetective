@@ -82,9 +82,7 @@
         text-decoration: none;
         margin-bottom: 24px;
         opacity: 0.85;
-        transition:
-          opacity 0.15s,
-          transform 0.15s;
+        transition: opacity 0.15s, transform 0.15s;
       }
       #back-link:hover {
         opacity: 1;
@@ -1018,6 +1016,7 @@
         if (correct) {
           icon.textContent = "🔍";
           title.textContent = "Case Closed";
+          try{const s=JSON.parse(localStorage.getItem('unsolved-desk-solved')||'[]');if(!s.includes('velvet-curtain')){s.push('velvet-curtain');localStorage.setItem('unsolved-desk-solved',JSON.stringify(s));}}catch{}
           text.innerHTML = `
       <p style="margin-bottom:14px;">You were right. <strong>${killer.name}</strong> cracked under the weight of her own story — claiming she never left the prop room after 9:40, while Harriet Voss placed her squarely at the curtain at 9:45, just minutes before the body was found.</p>
       <p style="margin-bottom:14px;">Faced with the contradiction, Vera confessed: Vance had told her that afternoon she'd be let go after the run. She went to confront him one last time. It wasn't planned. The bronze star was simply within reach.</p>

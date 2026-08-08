@@ -83,9 +83,7 @@
         text-decoration: none;
         margin-bottom: 24px;
         opacity: 0.85;
-        transition:
-          opacity 0.15s,
-          transform 0.15s;
+        transition: opacity 0.15s, transform 0.15s;
       }
       #back-link:hover {
         opacity: 1;
@@ -623,23 +621,24 @@
         <div id="briefing">
           <h2>The Situation</h2>
           <p>
-            Iris Calloway, founder and CEO of a mid-sized fintech startup, was
-            last seen entering her ninth-floor apartment at 10:40 PM. By 8:00 AM
-            the next morning — three hours before a board vote that would have
-            stripped her of control of the company she built — she was gone.
+            Iris Calloway, founder and CEO of a mid-sized fintech startup,
+            was last seen entering her ninth-floor apartment at 10:40 PM.
+            By 8:00 AM the next morning — three hours before a board vote
+            that would have stripped her of control of the company she
+            built — she was gone.
           </p>
           <p>
-            The door was locked from the inside. Nothing was broken. Her phone,
-            her passport, and one suitcase were missing; everything else, down
-            to the coffee still cooling on the counter, was exactly where she'd
-            left it. No struggle. No note.
+            The door was locked from the inside. Nothing was broken. Her
+            phone, her passport, and one suitcase were missing; everything
+            else, down to the coffee still cooling on the counter, was
+            exactly where she'd left it. No struggle. No note.
           </p>
           <p>
-            Five people knew her well enough to have a key, a motive, or both:
-            her co-founder, her assistant, the building's night doorman, her
-            ex-fiancé, and her lawyer. Nobody's reported a crime, exactly. But
-            somebody knows more than they're saying, and the board vote is in
-            six hours.
+            Five people knew her well enough to have a key, a motive, or
+            both: her co-founder, her assistant, the building's night
+            doorman, her ex-fiancé, and her lawyer. Nobody's reported a
+            crime, exactly. But somebody knows more than they're saying,
+            and the board vote is in six hours.
           </p>
           <p>
             Find out if Iris ran, or if she was made to disappear — and who
@@ -1050,6 +1049,7 @@
         if (correct) {
           icon.textContent = "🧳";
           title.textContent = "Case Closed";
+          try{const s=JSON.parse(localStorage.getItem('unsolved-desk-solved')||'[]');if(!s.includes('penthouse-on-9th')){s.push('penthouse-on-9th');localStorage.setItem('unsolved-desk-solved',JSON.stringify(s));}}catch{}
           text.innerHTML = `
       <p style="margin-bottom:14px;">You were right. <strong>${killer.name}</strong> claimed she hadn't spoken to Iris in three days — but Sal Ferreira saw a parcel in her own handwriting delivered to Iris's car the morning she vanished. She'd been coordinating the exit the entire time.</p>
       <p style="margin-bottom:14px;">Faced with the contradiction, Bex admitted it: Iris had decided weeks ago to walk away from the board fight entirely, on her own terms, with severance and leverage intact. Bex helped her vanish clean rather than let the board force her out empty-handed.</p>

@@ -83,9 +83,7 @@
         text-decoration: none;
         margin-bottom: 24px;
         opacity: 0.85;
-        transition:
-          opacity 0.15s,
-          transform 0.15s;
+        transition: opacity 0.15s, transform 0.15s;
       }
       #back-link:hover {
         opacity: 1;
@@ -623,28 +621,29 @@
         <div id="briefing">
           <h2>The Situation</h2>
           <p>
-            The Mercer's tenth anniversary party wrapped up just after midnight
-            — confetti, the good whiskey, half the neighborhood packed into a
-            bar built for half that many. By 12:30 the doors were locked and the
-            last guests gone.
+            The Mercer's tenth anniversary party wrapped up just after
+            midnight — confetti, the good whiskey, half the neighborhood
+            packed into a bar built for half that many. By 12:30 the doors
+            were locked and the last guests gone.
           </p>
           <p>
-            At 1:15 AM, the doorman found Tom Reyes, the Mercer's owner, dead on
-            the floor of his upstairs office. He'd been struck once with one of
-            his own anniversary trophies — the ten-year award that sat on his
-            shelf for exactly one night before it was used on him.
+            At 1:15 AM, the doorman found Tom Reyes, the Mercer's owner,
+            dead on the floor of his upstairs office. He'd been struck once
+            with one of his own anniversary trophies — the ten-year award
+            that sat on his shelf for exactly one night before it was used
+            on him.
           </p>
           <p>
-            Five people had keys, reasons, or both to still be in the building
-            after closing: his bartender, his business partner, his ex-wife, his
-            newest investor, and the doorman who found him. Everyone has an
-            account of where they were. Not everyone's account survives contact
-            with someone else's.
+            Five people had keys, reasons, or both to still be in the
+            building after closing: his bartender, his business partner,
+            his ex-wife, his newest investor, and the doorman who found him.
+            Everyone has an account of where they were. Not everyone's
+            account survives contact with someone else's.
           </p>
           <p>
-            Question them. Cross-reference what they tell you. When the timeline
-            stops adding up for one of them, you'll know who to name — but you
-            only get one name.
+            Question them. Cross-reference what they tell you. When the
+            timeline stops adding up for one of them, you'll know who to
+            name — but you only get one name.
           </p>
           <div class="signature">
             — Left on your desk, still smelling faintly of bar rail
@@ -1048,6 +1047,7 @@
         if (correct) {
           icon.textContent = "🔍";
           title.textContent = "Case Closed";
+          try{const s=JSON.parse(localStorage.getItem('unsolved-desk-solved')||'[]');if(!s.includes('last-call-mercer')){s.push('last-call-mercer');localStorage.setItem('unsolved-desk-solved',JSON.stringify(s));}}catch{}
           text.innerHTML = `
       <p style="margin-bottom:14px;">You were right. <strong>${killer.name}</strong> said he left at 12:30 and never came back — but Eli Frost placed him re-entering through the delivery door at 12:50, supposedly for a forgotten jacket. He never mentioned coming back at all.</p>
       <p style="margin-bottom:14px;">Faced with the contradiction, Marcus admitted it: he went back to make one last case for selling the bar, Tom refused again, and a decade of resentment finally found something heavy enough to use.</p>

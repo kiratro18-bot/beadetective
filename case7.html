@@ -1,0 +1,1053 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>The Westhaven Letters</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500&family=Special+Elite&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      :root {
+        --paper: #ede3d0;
+        --paper-dark: #e0d3b8;
+        --ink: #1c1812;
+        --ink-soft: #3a332a;
+        --brass: #a8823c;
+        --blood: #8b2c2c;
+        --smoke: #6b6458;
+        --green-dark: #2a3d2a;
+        --green-mid: #3d5c3a;
+        --green-light: #5a7a55;
+        --parchment: #f0e8d4;
+      }
+
+      body {
+        background: #0e0d0a;
+        background-image:
+          radial-gradient(ellipse at 20% 0%, rgba(42,61,42,0.12) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 100%, rgba(28,24,18,0.9) 0%, transparent 60%);
+        min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        color: var(--paper);
+        overflow-x: hidden;
+      }
+      body::before {
+        content: "";
+        position: fixed; inset: 0;
+        background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(42,61,42,0.1) 0%, transparent 55%);
+        pointer-events: none; z-index: 0;
+      }
+
+      #app { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; padding: 28px 20px 80px; }
+
+      #back-link {
+        display: inline-flex; align-items: center; gap: 8px;
+        font-family: "Special Elite", monospace; font-size: 11px;
+        letter-spacing: 0.15em; text-transform: uppercase;
+        color: var(--brass); text-decoration: none; margin-bottom: 20px;
+        opacity: 0.85; transition: opacity 0.15s, transform 0.15s;
+      }
+      #back-link:hover { opacity: 1; transform: translateX(-3px); }
+
+      /* ── Header ── */
+      #case-header { text-align: center; margin-bottom: 28px; }
+      #case-label { font-family: "Special Elite", monospace; font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--brass); margin-bottom: 8px; }
+      h1 { font-family: "Playfair Display", serif; font-weight: 900; font-size: clamp(26px, 5vw, 48px); color: var(--paper); letter-spacing: 0.01em; line-height: 1.05; }
+      #case-sub { font-family: "Playfair Display", serif; font-style: italic; font-size: 14px; color: var(--smoke); margin-top: 5px; }
+      .difficulty-badge {
+        display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;
+        font-family: "Special Elite", monospace; font-size: 10px; letter-spacing: 0.15em;
+        text-transform: uppercase; color: var(--green-light);
+        border: 1px solid rgba(90,122,85,0.4); padding: 4px 12px; border-radius: 2px;
+      }
+      .pips { display: flex; gap: 3px; }
+      .pip { width: 7px; height: 7px; border-radius: 50%; background: rgba(90,122,85,0.2); }
+      .pip.on { background: var(--green-light); }
+
+      /* ── Screens ── */
+      .screen { display: none; }
+      .screen.active { display: block; }
+
+      /* ── Briefing ── */
+      #briefing {
+        max-width: 720px; margin: 0 auto;
+        background: var(--paper); color: var(--ink);
+        padding: 38px 44px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); position: relative; border-radius: 2px;
+      }
+      #briefing::before {
+        content: "CASE FILE"; position: absolute; top: 18px; right: 22px;
+        font-family: "Special Elite", monospace; font-size: 10px; letter-spacing: 0.2em;
+        color: var(--blood); border: 1.5px solid var(--blood); padding: 3px 10px;
+        transform: rotate(4deg); opacity: 0.7;
+      }
+      #briefing h2 { font-family: "Playfair Display", serif; font-weight: 700; font-size: 22px; margin-bottom: 14px; }
+      #briefing p { font-family: "Special Elite", monospace; font-size: 13.5px; line-height: 1.85; color: var(--ink-soft); margin-bottom: 13px; }
+      .detail-box { background: var(--paper-dark); border-left: 3px solid var(--green-mid); padding: 13px 15px; margin: 14px 0; font-family: "Special Elite", monospace; font-size: 12.5px; line-height: 1.75; color: var(--ink-soft); }
+      .detail-box b { color: var(--ink); }
+      #briefing .signature { font-family: "Playfair Display", serif; font-style: italic; text-align: right; color: var(--smoke); font-size: 13px; margin-top: 20px; }
+      .begin-btn {
+        display: block; margin: 28px auto 0;
+        font-family: "Special Elite", monospace; font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase;
+        background: var(--ink); color: var(--paper); border: none; padding: 13px 36px;
+        cursor: pointer; transition: background 0.2s, transform 0.15s;
+      }
+      .begin-btn:hover { background: var(--blood); transform: translateY(-2px); }
+
+      /* ── GAME LAYOUT — 3 columns ── */
+      #game-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr 260px;
+        gap: 20px;
+        align-items: start;
+      }
+      @media (max-width: 980px) {
+        #game-layout { grid-template-columns: 1fr; }
+        #location-panel { order: 1; }
+        #dialogue-panel { order: 2; }
+        #notebook { order: 3; }
+      }
+
+      /* ── LOCATION MAP PANEL ── */
+      #location-panel { display: flex; flex-direction: column; gap: 10px; }
+
+      .panel-label { font-family: "Special Elite", monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--brass); margin-bottom: 2px; }
+
+      /* SVG map */
+      #map-wrap {
+        background: #1a1e14;
+        border: 1px solid rgba(90,122,85,0.25);
+        border-radius: 3px;
+        padding: 12px;
+        position: relative;
+      }
+      #location-map {
+        width: 100%;
+        height: 220px;
+        display: block;
+      }
+      .map-zone {
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+      .map-zone:hover rect, .map-zone:hover ellipse { opacity: 0.85; }
+      .map-zone.active-zone rect, .map-zone.active-zone ellipse { stroke: var(--brass) !important; stroke-width: 2px !important; }
+      .map-label { font-family: "Special Elite", cursive; font-size: 9px; fill: rgba(237,227,208,0.7); pointer-events: none; }
+      .map-dot { fill: var(--brass); }
+
+      /* Suspect cards under map */
+      #suspect-cards { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+      .suspect-card {
+        background: var(--paper); color: var(--ink);
+        padding: 11px 13px; cursor: pointer;
+        border-left: 4px solid transparent;
+        transition: transform 0.15s, border-color 0.2s;
+        position: relative; border-radius: 1px;
+      }
+      .suspect-card:hover { transform: translateX(3px); }
+      .suspect-card.selected { border-left-color: var(--blood); background: var(--paper-dark); }
+      .suspect-card.dimmed { opacity: 0.45; }
+      .s-name { font-family: "Playfair Display", serif; font-weight: 700; font-size: 14px; }
+      .s-role { font-family: "Special Elite", monospace; font-size: 10px; color: var(--smoke); margin-top: 1px; }
+      .s-location { font-family: "Courier Prime", monospace; font-size: 9.5px; color: var(--green-light); margin-top: 3px; }
+      .s-badge { position: absolute; top: 8px; right: 9px; font-size: 9px; color: var(--brass); font-family: "Special Elite", monospace; }
+
+      #filter-hint { font-family: "Special Elite", monospace; font-size: 10px; color: rgba(168,130,60,0.5); text-align: center; margin-top: 2px; letter-spacing: 0.05em; }
+      #clear-filter-btn {
+        display: none;
+        margin: 4px auto 0;
+        font-family: "Special Elite", monospace; font-size: 9.5px; letter-spacing: 0.1em;
+        text-transform: uppercase; background: none; border: 1px solid rgba(168,130,60,0.35);
+        color: var(--brass); padding: 4px 12px; cursor: pointer; width: 100%;
+        transition: border-color 0.15s;
+      }
+      #clear-filter-btn:hover { border-color: var(--brass); }
+
+      /* ── Dialogue panel ── */
+      #dialogue-panel {
+        background: var(--paper); color: var(--ink);
+        min-height: 500px; display: flex; flex-direction: column;
+        box-shadow: 0 14px 48px rgba(0,0,0,0.5);
+      }
+      #suspect-header {
+        display: flex; align-items: center; gap: 14px;
+        padding: 20px 24px; border-bottom: 2px solid var(--ink);
+      }
+      #suspect-portrait {
+        width: 56px; height: 56px; border-radius: 50%;
+        background: var(--ink); display: flex; align-items: center; justify-content: center;
+        font-family: "Playfair Display", serif; font-size: 22px; font-weight: 700;
+        color: var(--paper); flex-shrink: 0;
+      }
+      #suspect-header-text h3 { font-family: "Playfair Display", serif; font-size: 19px; font-weight: 700; }
+      #suspect-header-text .s-loc-tag {
+        font-family: "Special Elite", monospace; font-size: 10.5px;
+        color: var(--green-light); margin-top: 2px;
+      }
+      #suspect-header-text p { font-family: "Special Elite", monospace; font-size: 11px; color: var(--smoke); margin-top: 1px; }
+
+      #dialogue-body {
+        flex: 1; padding: 20px 24px;
+        display: flex; flex-direction: column; gap: 12px;
+        overflow-y: auto; max-height: 380px;
+      }
+      .dialogue-line { display: flex; gap: 10px; animation: fadeIn 0.3s ease; }
+      @keyframes fadeIn { from{opacity:0;transform:translateY(5px);} to{opacity:1;transform:translateY(0);} }
+      .dialogue-line.player { justify-content: flex-end; }
+      .dialogue-line.player .bubble { background: var(--ink); color: var(--paper); }
+      .bubble { font-family: "Special Elite", monospace; font-size: 12.5px; line-height: 1.65; background: var(--paper-dark); padding: 10px 14px; max-width: 82%; }
+      .bubble.thread-flag { border-left: 3px solid var(--brass); }
+      .bubble.red-flag { border-left: 3px solid var(--blood); }
+
+      #empty-dialogue {
+        flex: 1; display: flex; align-items: center; justify-content: center;
+        font-family: "Playfair Display", serif; font-style: italic;
+        color: var(--smoke); font-size: 14px; text-align: center; padding: 40px;
+      }
+
+      #questions { padding: 14px 24px 20px; border-top: 1px solid rgba(28,24,18,0.12); display: flex; flex-direction: column; gap: 6px; }
+      .q-btn {
+        font-family: "Inter", sans-serif; font-size: 12.5px; font-weight: 500;
+        text-align: left; background: none; border: 1.5px solid rgba(28,24,18,0.16);
+        color: var(--ink); padding: 9px 14px; cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+      }
+      .q-btn:hover { background: rgba(28,24,18,0.05); border-color: var(--ink); }
+      .q-btn:disabled { opacity: 0.32; cursor: default; }
+      .q-btn:disabled:hover { background: none; }
+
+      /* ── Notebook ── */
+      #notebook { background: #1e1910; padding: 18px; position: sticky; top: 18px; box-shadow: 0 14px 48px rgba(0,0,0,0.5); }
+      #notebook .panel-label { color: var(--brass); margin-bottom: 10px; }
+
+      /* Thread tracker pills */
+      #thread-tracker { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+      .thread-pill {
+        font-family: "Special Elite", monospace; font-size: 9.5px; letter-spacing: 0.08em;
+        text-transform: uppercase; padding: 5px 10px; border-radius: 2px;
+        border: 1px solid rgba(168,130,60,0.25); color: rgba(168,130,60,0.4);
+        transition: all 0.4s ease; display: flex; align-items: center; gap: 5px;
+      }
+      .thread-pill.found { border-color: var(--brass); color: var(--brass); }
+      .thread-pill.found::before { content: "✓ "; }
+
+      #clue-list { display: flex; flex-direction: column; gap: 8px; min-height: 50px; max-height: 360px; overflow-y: auto; }
+      .clue-empty { font-family: "Playfair Display", serif; font-style: italic; font-size: 11.5px; color: var(--smoke); line-height: 1.5; }
+      .clue-card {
+        background: var(--paper); color: var(--ink);
+        padding: 8px 10px; font-family: "Special Elite", monospace;
+        font-size: 10.5px; line-height: 1.5; position: relative; animation: fadeIn 0.4s ease;
+      }
+      .clue-card.thread-clue { background: #e4edd8; }
+      .clue-card.red-clue { background: #f3e5e0; }
+      .clue-stamp {
+        position: absolute; top: -7px; right: -5px;
+        font-family: "Special Elite", monospace; font-size: 7px; letter-spacing: 0.1em;
+        padding: 2px 5px; transform: rotate(8deg); box-shadow: 0 2px 5px rgba(0,0,0,0.3); color: #fff;
+      }
+      .stamp-thread { background: #4a6335; }
+      .stamp-red { background: var(--blood); }
+
+      #thread-count { font-family: "Special Elite", monospace; font-size: 9.5px; letter-spacing: 0.08em; color: var(--brass); text-align: center; margin-top: 8px; padding: 5px; border: 1px solid rgba(168,130,60,0.2); }
+      #accuse-section { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(237,227,208,0.1); }
+      #accuse-btn {
+        width: 100%; font-family: "Special Elite", monospace; font-size: 11.5px;
+        letter-spacing: 0.1em; text-transform: uppercase; background: var(--blood);
+        color: #fff; border: none; padding: 12px; cursor: pointer;
+        transition: background 0.2s, transform 0.15s;
+      }
+      #accuse-btn:hover { background: #a83838; transform: translateY(-2px); }
+      #accuse-btn:disabled { background: #2e2620; cursor: default; transform: none; color: rgba(237,227,208,0.25); }
+      #accuse-hint { font-family: "Inter", sans-serif; font-size: 9.5px; color: var(--smoke); text-align: center; margin-top: 7px; line-height: 1.5; }
+
+      /* ── Modal ── */
+      #accuse-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.82); display: none; align-items: center; justify-content: center; z-index: 50; padding: 24px; }
+      #accuse-modal.show { display: flex; }
+      #accuse-modal-inner { background: var(--paper); color: var(--ink); max-width: 440px; width: 100%; padding: 30px; box-shadow: 0 30px 80px rgba(0,0,0,0.7); max-height: 85vh; overflow-y: auto; }
+      #accuse-modal-inner h3 { font-family: "Playfair Display", serif; font-size: 21px; font-weight: 700; margin-bottom: 5px; }
+      #accuse-modal-inner p { font-family: "Special Elite", monospace; font-size: 12px; color: var(--smoke); margin-bottom: 16px; }
+      .accuse-option { display: block; width: 100%; text-align: left; font-family: "Inter", sans-serif; font-size: 13.5px; font-weight: 500; background: none; border: 1.5px solid rgba(28,24,18,0.18); padding: 11px 15px; margin-bottom: 7px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+      .accuse-option:hover { background: rgba(28,24,18,0.05); border-color: var(--ink); }
+      #cancel-accuse { display: block; margin: 12px auto 0; background: none; border: none; font-family: "Inter", sans-serif; font-size: 11.5px; color: var(--smoke); cursor: pointer; text-decoration: underline; }
+
+      /* ── Result ── */
+      #result-screen { max-width: 680px; margin: 0 auto; background: var(--paper); color: var(--ink); padding: 42px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.6); border-radius: 2px; }
+      #result-icon { font-size: 48px; margin-bottom: 8px; }
+      #result-title { font-family: "Playfair Display", serif; font-weight: 900; font-size: 30px; margin-bottom: 10px; }
+      #result-text { font-family: "Special Elite", monospace; font-size: 13.5px; line-height: 1.85; color: var(--ink-soft); text-align: left; margin-bottom: 24px; }
+      #play-again-btn { font-family: "Special Elite", monospace; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; background: var(--ink); color: var(--paper); border: none; padding: 13px 32px; cursor: pointer; transition: background 0.2s; }
+      #play-again-btn:hover { background: var(--blood); }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <a id="back-link" href="index.html">← Back to the desk</a>
+
+      <div id="case-header">
+        <div id="case-label">Case File No. 44</div>
+        <h1>The Westhaven Letters</h1>
+        <div id="case-sub">Murder at a Country Manor — Seven Suspects, Six Locations</div>
+        <div class="difficulty-badge">
+          Difficulty
+          <div class="pips">
+            <div class="pip on"></div><div class="pip on"></div><div class="pip on"></div><div class="pip on"></div><div class="pip on"></div>
+          </div>
+          Hard
+        </div>
+      </div>
+
+      <!-- ── BRIEFING ── -->
+      <div class="screen active" id="briefing-screen">
+        <div id="briefing">
+          <h2>The Situation</h2>
+          <p>Roland Ashby — retired High Court judge, 67, recently widowed — was found dead in his study at Westhaven Manor at 11:20 PM on Friday. A single blow to the back of the head. His safe was open. His papers were disturbed. And a bundle of letters that were there that morning were gone by midnight.</p>
+          <div class="detail-box">
+            <b>Time of death:</b> Estimated 10:30 PM – 11:10 PM, Friday.<br/>
+            <b>Location:</b> The study, Westhaven Manor, Barrowfield village.<br/>
+            <b>Discovered by:</b> The housekeeper, returning from the garden.<br/>
+            <b>What's missing:</b> A bundle of personal correspondence from the safe — contents unknown to anyone but Roland.
+          </div>
+          <p>Seven people were within reach of Westhaven that night. Three were inside the property. Four were in the village or on the approach road. Statements have been taken. They don't all agree.</p>
+          <p>Use the location map to filter suspects by where they claim to have been. The map will help — but remember that where someone <em>says</em> they were and where they <em>were</em> are not the same thing.</p>
+          <p>There are three threads to follow. One of them leads almost to the study door — and stops just short. The real answer requires you to check one alibi from two separate directions.</p>
+          <div class="signature">— Filed by the duty detective, Saturday morning</div>
+        </div>
+        <button class="begin-btn" id="begin-btn">Open the case</button>
+      </div>
+
+      <!-- ── MAIN GAME ── -->
+      <div class="screen" id="game-screen">
+        <div id="game-layout">
+
+          <!-- LEFT: Location map + suspect cards -->
+          <div id="location-panel">
+            <div class="panel-label">Locations — click to filter</div>
+            <div id="map-wrap">
+              <svg id="location-map" viewBox="0 0 256 220" xmlns="http://www.w3.org/2000/svg">
+                <!-- Background -->
+                <rect width="256" height="220" fill="#141810"/>
+
+                <!-- Roads -->
+                <line x1="128" y1="0" x2="128" y2="220" stroke="#2a2e20" stroke-width="6"/>
+                <line x1="0" y1="130" x2="256" y2="130" stroke="#2a2e20" stroke-width="4"/>
+
+                <!-- THE MANOR (top centre) -->
+                <g class="map-zone" data-loc="manor" id="zone-manor">
+                  <rect x="88" y="12" width="80" height="52" rx="3" fill="#2a3d2a" stroke="#4a6335" stroke-width="1.5"/>
+                  <text x="128" y="32" text-anchor="middle" class="map-label" font-size="8" fill="#b8d4a0">WESTHAVEN</text>
+                  <text x="128" y="44" text-anchor="middle" class="map-label" font-size="8" fill="#b8d4a0">MANOR</text>
+                  <circle cx="128" cy="58" r="4" fill="#4a6335"/>
+                </g>
+
+                <!-- STUDY (inside manor, right) -->
+                <g class="map-zone" data-loc="study" id="zone-study">
+                  <rect x="150" y="16" width="14" height="14" rx="1" fill="#8b2c2c" stroke="#a83838" stroke-width="1"/>
+                  <text x="157" y="40" text-anchor="middle" class="map-label" font-size="7" fill="#f0a0a0">Study</text>
+                </g>
+
+                <!-- GUEST COTTAGE (left of manor) -->
+                <g class="map-zone" data-loc="cottage" id="zone-cottage">
+                  <rect x="30" y="30" width="48" height="34" rx="2" fill="#1e2e1e" stroke="#3a5030" stroke-width="1.5"/>
+                  <text x="54" y="48" text-anchor="middle" class="map-label" fill="#8ab882">Guest</text>
+                  <text x="54" y="58" text-anchor="middle" class="map-label" fill="#8ab882">Cottage</text>
+                </g>
+
+                <!-- KITCHEN (bottom-left manor) -->
+                <g class="map-zone" data-loc="kitchen" id="zone-kitchen">
+                  <rect x="88" y="66" width="34" height="22" rx="1" fill="#1e2a1e" stroke="#3a5030" stroke-width="1"/>
+                  <text x="105" y="81" text-anchor="middle" class="map-label" fill="#8ab882">Kitchen</text>
+                </g>
+
+                <!-- GARDEN (bottom manor) -->
+                <g class="map-zone" data-loc="garden" id="zone-garden">
+                  <ellipse cx="128" cy="100" rx="30" ry="18" fill="#1a2a14" stroke="#3a5030" stroke-width="1"/>
+                  <text x="128" y="104" text-anchor="middle" class="map-label" fill="#7aaa72">Garden</text>
+                </g>
+
+                <!-- THE LANE (middle road area) -->
+                <g class="map-zone" data-loc="lane" id="zone-lane">
+                  <rect x="100" y="122" width="56" height="16" rx="2" fill="#1a1e10" stroke="#3a4020" stroke-width="1"/>
+                  <text x="128" y="133" text-anchor="middle" class="map-label" fill="#6a7050">Village Lane</text>
+                </g>
+
+                <!-- THE LAMB PUB (bottom right) -->
+                <g class="map-zone" data-loc="pub" id="zone-pub">
+                  <rect x="178" y="150" width="58" height="38" rx="2" fill="#221a10" stroke="#5a4020" stroke-width="1.5"/>
+                  <text x="207" y="168" text-anchor="middle" class="map-label" fill="#c8a060">The Lamb</text>
+                  <text x="207" y="180" text-anchor="middle" class="map-label" fill="#c8a060">Pub</text>
+                </g>
+
+                <!-- VILLAGE (bottom left) -->
+                <g class="map-zone" data-loc="village" id="zone-village">
+                  <rect x="20" y="150" width="54" height="38" rx="2" fill="#181816" stroke="#303030" stroke-width="1"/>
+                  <text x="47" y="168" text-anchor="middle" class="map-label" fill="#707060">Village</text>
+                  <text x="47" y="180" text-anchor="middle" class="map-label" fill="#707060">Homes</text>
+                </g>
+
+                <!-- Compass rose -->
+                <text x="234" y="18" font-size="10" fill="rgba(168,130,60,0.4)" font-family="serif">N</text>
+                <line x1="239" y1="20" x2="239" y2="30" stroke="rgba(168,130,60,0.3)" stroke-width="1"/>
+
+                <!-- Filter indicator -->
+                <text id="map-filter-label" x="128" y="213" text-anchor="middle" font-size="7.5" fill="rgba(168,130,60,0.45)" font-family="Special Elite, monospace">Click a location to filter suspects</text>
+              </svg>
+            </div>
+
+            <button id="clear-filter-btn">✕ Show all suspects</button>
+            <div id="filter-hint">7 suspects across 6 locations</div>
+
+            <div id="suspect-cards"></div>
+          </div>
+
+          <!-- CENTRE: Dialogue -->
+          <div id="dialogue-panel">
+            <div id="suspect-header" style="display:none;">
+              <div id="suspect-portrait"></div>
+              <div id="suspect-header-text">
+                <h3 id="s-name"></h3>
+                <div class="s-loc-tag" id="s-loc-tag"></div>
+                <p id="s-role"></p>
+              </div>
+            </div>
+            <div id="dialogue-body">
+              <div id="empty-dialogue">Select a suspect from the left panel — or click a location on the map to find who was there.</div>
+            </div>
+            <div id="questions" style="display:none;"></div>
+          </div>
+
+          <!-- RIGHT: Notebook -->
+          <div id="notebook">
+            <div class="panel-label">Notebook</div>
+
+            <div id="thread-tracker">
+              <div class="thread-pill" id="thread-a">Thread A — The Clerk</div>
+              <div class="thread-pill" id="thread-b">Thread B — The Solicitor</div>
+              <div class="thread-pill" id="thread-c">Thread C — The Doctor</div>
+            </div>
+
+            <div id="clue-list">
+              <div class="clue-empty">Clues will appear here as you question suspects. Three threads — one of them misleads.</div>
+            </div>
+
+            <div id="thread-count">Threads: 0 / 3</div>
+
+            <div id="accuse-section">
+              <button id="accuse-btn" disabled>Name the killer</button>
+              <div id="accuse-hint">Follow all three threads and question at least 5 suspects first.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── RESULT ── -->
+      <div class="screen" id="result-screen-wrap">
+        <div id="result-screen">
+          <div id="result-icon"></div>
+          <div id="result-title"></div>
+          <div id="result-text"></div>
+          <button id="play-again-btn">Read the case again</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accusation modal -->
+    <div id="accuse-modal">
+      <div id="accuse-modal-inner">
+        <h3>Who killed Roland Ashby?</h3>
+        <p>One accusation only. The letters tell you why — the timeline tells you who.</p>
+        <div id="accuse-options"></div>
+        <button id="cancel-accuse">Not yet — keep investigating</button>
+      </div>
+    </div>
+
+    <script>
+    // ═══════════════════════════════════════════════════════════
+    // CASE: The Westhaven Letters
+    //
+    // KILLER: Dr. Philip Osei (GP)
+    //
+    // THREAD A — RED HERRING (Sylvia Crane, former clerk):
+    //   Her car was seen on the lane at 10:55 PM after claiming to
+    //   have left at 9:45. Strong motive (Roland was about to testify
+    //   against her). She admits returning but says she lost her nerve.
+    //   Ruled out because: Constance saw a TALL figure smoking in the
+    //   garden at 10:50 — Sylvia is 5'2". She never entered.
+    //
+    // THREAD B — NEAR MISS (Arthur Venn, solicitor):
+    //   Tom saw Arthur's silver Jaguar on the lane at 10:45 heading
+    //   toward the manor. Arthur claims he arrived at 11:30. 45-min gap.
+    //   BUT: his car's tyre pressure log shows a flat at the gate,
+    //   timestamped 10:47. He arrived late — legitimately delayed.
+    //
+    // THREAD C — THE KILL CHAIN (Dr. Philip Osei):
+    //   1. Barmaid: Philip left The Lamb at 10:30 claiming to "make a
+    //      call outside" — but she saw him drive away, not stand outside.
+    //   2. Tom Radley (on the lane at 10:45 walking his dog) passed a
+    //      tall man in a dark coat near the manor gate on foot — not
+    //      Arthur (Arthur was in his car with the flat).
+    //   3. The cigarette end in the garden = Balkan Sobranie (rare brand).
+    //      Felix mentions Philip always smoked them when visiting.
+    //   MOTIVE: The letters proved Philip had falsified a patient death
+    //      certificate. Roland told him that morning he was going to
+    //      the police. Philip visited that evening, killed Roland,
+    //      and took the letters.
+    // ═══════════════════════════════════════════════════════════
+
+    const LOCATIONS = {
+      manor:   "Westhaven Manor",
+      study:   "The Study (crime scene)",
+      cottage: "Guest Cottage",
+      kitchen: "The Kitchen",
+      garden:  "The Garden",
+      lane:    "Village Lane",
+      pub:     "The Lamb, Village Pub",
+      village: "Village (home)",
+    };
+
+    const suspects = [
+      {
+        id: "margaret",
+        name: "Margaret Ashby",
+        role: "Roland's Wife",
+        initial: "M",
+        location: "kitchen",
+        questions: [
+          {
+            q: "Where were you when Roland was killed?",
+            a: "In the kitchen the entire evening — Constance was with me until she went to check the garden at ten to eleven. I heard nothing from the study. The house is old, the walls are thick.",
+            clue: "Margaret was in the kitchen all evening. Constance left briefly at 10:50 to check the garden.",
+          },
+          {
+            q: "What was in Roland's safe?",
+            a: "I never had the combination. He kept it locked, always. He told me once that it held things he hoped he'd never need — I didn't press him on it.",
+            clue: "Margaret did not know the safe's combination. Roland described its contents as things 'he hoped he'd never need.'",
+          },
+          {
+            q: "Did Roland have any enemies?",
+            a: "He was a judge for thirty years. He had a hundred enemies. The one who frightened me most recently was Sylvia Crane — she telephoned twice this week demanding to speak to him. He refused both times.",
+            clue: "Sylvia Crane telephoned Roland twice in the week before his death. He refused to speak with her.",
+            isThread: true, threadKey: "a",
+          },
+          {
+            q: "Did Philip Osei visit often?",
+            a: "As Roland's GP, yes — but this past month he'd been coming for reasons that weren't medical. They'd argue. Roland told me Philip had made 'a serious error of judgment' that was going to catch up with him. I assumed it was financial.",
+            clue: "Philip Osei visited frequently in the past month for non-medical reasons. Roland told Margaret Philip had made a 'serious error of judgment' that would catch up with him.",
+            isThread: true, threadKey: "c",
+          },
+        ],
+      },
+      {
+        id: "felix",
+        name: "Felix Ashby",
+        role: "Roland's Nephew & Heir",
+        initial: "F",
+        location: "cottage",
+        questions: [
+          {
+            q: "When did you last see Roland alive?",
+            a: "At dinner — around eight. He seemed distracted. We didn't speak much. I went to the cottage around nine and stayed there. I didn't go back to the manor, whatever anyone might suggest.",
+            clue: "Felix last saw Roland at dinner around 8 PM, then returned to the guest cottage at 9 PM.",
+          },
+          {
+            q: "Did you hear anything from the manor during the evening?",
+            a: "The cottage is forty metres from the house. I heard a car on the drive around half ten — more than one, I think. And I saw a light moving in the garden, briefly. I assumed it was Constance doing her rounds.",
+            clue: "Felix heard at least two cars on the drive around 10:30 PM and saw a light moving in the garden.",
+            isThread: true, threadKey: "c",
+          },
+          {
+            q: "You stand to inherit everything. Motive enough?",
+            a: "I was here last week and the week before. If I'd wanted to do something, I'd have had ample opportunity without doing it on a night when half the county seems to have been visiting. I also happened to love him.",
+            clue: "Felix points out the illogic of choosing this particular night, with so many visitors, if he intended harm.",
+          },
+          {
+            q: "Did you know Philip Osei well?",
+            a: "Philip visited a lot lately. Good man, usually, though he seemed tightly wound the past few weeks. He has this habit — always smokes outside, Balkan Sobranies, horrible black cigarettes. I used to tease him about them.",
+            clue: "Felix confirms Philip Osei smoked Balkan Sobranie cigarettes — an unusual brand — whenever he visited.",
+            isThread: true, threadKey: "c",
+          },
+        ],
+      },
+      {
+        id: "constance",
+        name: "Constance Ware",
+        role: "Housekeeper (22 years)",
+        initial: "C",
+        location: "garden",
+        questions: [
+          {
+            q: "Tell me about the moment you found him.",
+            a: "I'd been in the kitchen with Mrs. Ashby all evening. At ten to eleven I went to check the garden — I thought I'd seen a light from the kitchen window. I found a cigarette end on the south terrace. Then I went to tell Mr. Ashby, knocked on the study door, and found it open and him on the floor.",
+            clue: "Constance found a cigarette end on the south terrace at approximately 10:50 PM before discovering Roland's body.",
+            isThread: true, threadKey: "c",
+          },
+          {
+            q: "What did you see in the garden when you went to check?",
+            a: "The light was gone by the time I got there. But I'd seen a figure — tall, dark coat — standing near the terrace steps. I assumed it was Mr. Ashby himself, taking air. I only realised later that couldn't have been right.",
+            clue: "Constance saw a tall figure in a dark coat near the terrace steps at approximately 10:50 PM — too tall to be Sylvia Crane (5'2\").",
+            isThread: true, threadKey: "a",
+          },
+          {
+            q: "Did you recognise the cigarette brand?",
+            a: "I picked it up — it's still in my apron pocket, I couldn't think what to do with it. Black paper, gold tip. I've seen them before. Dr. Osei smokes them, or used to. He'd always smoke outside, never inside the house.",
+            clue: "Constance found a black-papered, gold-tipped cigarette end on the terrace — the same brand Felix associates with Dr. Philip Osei.",
+            isThread: true, threadKey: "c",
+          },
+          {
+            q: "Was Sylvia Crane at the house recently?",
+            a: "She was here for dinner — left around quarter to ten by the front door. I saw the headlights of her car leaving. But later, around five to eleven, I heard tyres on the lane and thought I saw her car parked at the field gate. I can't be certain — it was dark.",
+            clue: "Constance may have seen Sylvia Crane's car parked near the field gate at approximately 10:55 PM, after Sylvia claimed to have left.",
+            isThread: true, threadKey: "a",
+          },
+        ],
+      },
+      {
+        id: "philip",
+        name: "Dr. Philip Osei",
+        role: "Roland's GP",
+        initial: "P",
+        location: "pub",
+        questions: [
+          {
+            q: "Where were you between 10 and 11 PM?",
+            a: "At The Lamb. I'd been there since eight, had dinner alone, a couple of whiskies. I stepped outside around half ten to make a telephone call — bad signal inside — then came back in. I was at the bar when the call about Roland came through.",
+            clue: "Philip claims he was at The Lamb all evening, stepping outside briefly at 10:30 PM to make a call.",
+          },
+          {
+            q: "Did you drive to the pub or walk?",
+            a: "Drove. Parked on the side road behind the pub. I walked back to my car after the call — maybe eleven-fifteen, eleven-twenty.",
+            clue: "Philip drove to The Lamb and parked on the side road behind it. He says he returned to his car around 11:15–11:20 PM.",
+          },
+          {
+            q: "The barmaid says she saw you drive away at 10:30. Not stand outside.",
+            a: "She's mistaken. It was dark, it was busy. I stepped outside, made my call, came back in. I don't know what she thinks she saw.",
+            clue: "Philip contradicts the barmaid's account — she says she saw him drive away at 10:30, not step outside. He insists she's mistaken.",
+            isThread: true, threadKey: "c",
+          },
+          {
+            q: "What were those letters in Roland's safe?",
+            a: "I don't know anything about any letters.",
+            clue: "Philip claims no knowledge of the letters — but his answer is notably brief for someone who knew Roland well.",
+            isThread: true, threadKey: "c",
+          },
+          {
+            q: "Roland told his wife you'd made a serious error of judgment. What did he mean?",
+            a: "Roland and I had a professional disagreement, nothing more. He was — he could be rigid in his thinking. Old-fashioned. He didn't always understand the pressures that modern medicine puts on people.",
+            clue: "Philip describes the conflict with Roland as a 'professional disagreement' about modern medical pressures — evasive about specifics.",
+            isThread: true, threadKey: "c",
+          },
+        ],
+      },
+      {
+        id: "sylvia",
+        name: "Sylvia Crane",
+        role: "Roland's Former Clerk",
+        initial: "S",
+        location: "lane",
+        questions: [
+          {
+            q: "You were at dinner, then left at 9:45. Is that right?",
+            a: "That's correct. I said goodbye to Margaret, got in my car, and drove home. I had no reason to stay.",
+            clue: "Sylvia claims she left Westhaven Manor at approximately 9:45 PM and drove home.",
+          },
+          {
+            q: "Roland was about to testify against you in a misconduct hearing. How did you feel about that?",
+            a: "Frightened. Angry. But I'm telling you I left at 9:45 and went home.",
+            clue: "Roland was due to testify against Sylvia in an ongoing misconduct hearing. She admits to fear and anger.",
+            isThread: true, threadKey: "a",
+          },
+          {
+            q: "Your car was seen parked on the lane at 10:55. You want to revise your answer?",
+            a: "...Yes. I drove home, then I turned around. I drove back to the manor — I wanted to talk to him. I sat in the car at the field gate for ten minutes and then I lost my nerve and left. I never went inside. I never saw him. I swear to you.",
+            clue: "Sylvia admits she returned and parked near the field gate at approximately 10:55 PM, but claims she never entered the property.",
+            isThread: true, threadKey: "a",
+          },
+          {
+            q: "Did you see anyone as you sat there?",
+            a: "A car came out of the drive as I arrived — I had to pull over to let it pass. Dark coloured, medium-sized. Moving quickly. I didn't see the driver.",
+            clue: "Sylvia saw a dark-coloured car leaving the manor drive quickly at approximately 10:55 PM as she arrived at the gate.",
+            isThread: true, threadKey: "c",
+          },
+        ],
+      },
+      {
+        id: "tom",
+        name: "Tom Radley",
+        role: "Gardener, Village Resident",
+        initial: "T",
+        location: "village",
+        questions: [
+          {
+            q: "You were walking on the lane around 10:45. What did you see?",
+            a: "I walk the dog same time every night. I saw two things: a silver Jaguar pulled over near the manor gate with its hazards on — the driver was crouched at the near-side front tyre. And a man on foot, tall, dark coat, walking up the drive toward the house. Didn't recognise him in the dark.",
+            clue: "Tom saw two things at 10:45 PM: a silver Jaguar stopped with hazards on near the gate, and a tall man in a dark coat walking up the manor drive on foot.",
+            isThread: true, threadKey: "b",
+          },
+          {
+            q: "Could the man on foot have been the driver of the Jaguar?",
+            a: "No. The driver was still at the car when I passed — I could see them clearly enough. The man on foot was already twenty metres up the drive. Two different people.",
+            clue: "Tom confirms the man on foot was separate from the Jaguar's driver — two different people at the manor gate simultaneously.",
+            isThread: true, threadKey: "b",
+          },
+          {
+            q: "Did you find anything unusual in the garden the next morning?",
+            a: "A cigarette end on the south terrace. Black paper, gold tip. I don't smoke, nobody on the staff smokes, and Mr. Ashby hadn't smoked in thirty years. I showed it to the constable.",
+            clue: "Tom found a distinctive cigarette end on the south terrace the next morning — the same type Constance found and Felix associates with Dr. Osei.",
+            isThread: true, threadKey: "c",
+          },
+          {
+            q: "What time was this walk exactly?",
+            a: "Quarter to eleven, give or take five minutes. I always leave the house at twenty to. My dog is more reliable than a clock.",
+            clue: "Tom's walk was at approximately 10:40–10:45 PM — consistent with other witness timelines placing activity at the manor gate around that time.",
+          },
+        ],
+      },
+      {
+        id: "arthur",
+        name: "Arthur Venn",
+        role: "Roland's Solicitor",
+        initial: "A",
+        location: "lane",
+        questions: [
+          {
+            q: "Roland called you to come to the manor that evening. Why?",
+            a: "He wanted to update his will — urgently, he said. He'd telephoned at seven asking me to come as soon as I could. He said he had new information that changed certain things. He was agitated.",
+            clue: "Roland urgently summoned Arthur to the manor to update his will, saying he had 'new information' that changed things. He sounded agitated.",
+            isThread: true, threadKey: "c",
+          },
+          {
+            q: "Tom saw your car at the gate at 10:45. You claimed to arrive at 11:30.",
+            a: "I got a flat tyre. Just past the manor gate — the front nearside went down within thirty seconds of me stopping. I was stuck there for forty minutes waiting for my wife to bring the spare. The car logs everything — tyre pressure dropped at 10:47, it's all recorded.",
+            clue: "Arthur's car suffered a flat tyre at 10:47 PM just past the manor gate — his car's tyre pressure log independently records the event. He was stranded for 40 minutes.",
+            isThread: true, threadKey: "b",
+          },
+          {
+            q: "Did you see anyone on the lane while you were stranded?",
+            a: "A man on foot passed me going up the drive — I waved but he didn't stop. Then a dog-walker went by going the other direction. Later, a car came out from the drive moving very fast and nearly clipped my wing mirror. Dark car, no idea what make.",
+            clue: "Arthur confirms Tom's account — a man on foot went up the drive, a dog-walker passed (Tom Radley), then a dark car exited the manor drive quickly.",
+            isThread: true, threadKey: "c",
+          },
+          {
+            q: "Could Roland's will change have related to the letters?",
+            a: "He didn't tell me the specifics. But he used the phrase 'insurance' — said the letters were 'insurance he no longer needed.' I believe he'd decided to go to the police instead and wanted to ensure his estate was in order beforehand.",
+            clue: "Roland told Arthur the letters were 'insurance he no longer needed' — suggesting he'd decided to act directly rather than hold them in reserve.",
+            isThread: true, threadKey: "c",
+          },
+        ],
+      },
+    ];
+
+    const KILLER_ID    = "philip";
+    const MIN_SUSPECTS = 5;
+    const KEY_THREADS  = 3;
+
+    // ── STATE ──
+    let selectedSuspect    = null;
+    let askedQuestions     = {};
+    let cluesFound         = [];
+    let suspectsQuestioned = new Set();
+    let threadsFound       = new Set();
+    let activeLocFilter    = null;
+    let caseResolved       = false;
+
+    suspects.forEach(s => { askedQuestions[s.id] = new Set(); });
+
+    // ── DOM ──
+    const briefingScreen   = document.getElementById("briefing-screen");
+    const gameScreen       = document.getElementById("game-screen");
+    const resultScreenWrap = document.getElementById("result-screen-wrap");
+    const suspectCardsEl   = document.getElementById("suspect-cards");
+    const dialogueBody     = document.getElementById("dialogue-body");
+    const questionsEl      = document.getElementById("questions");
+    const suspectHeader    = document.getElementById("suspect-header");
+    const suspectPortrait  = document.getElementById("suspect-portrait");
+    const sName            = document.getElementById("s-name");
+    const sRole            = document.getElementById("s-role");
+    const sLocTag          = document.getElementById("s-loc-tag");
+    const emptyDialogue    = document.getElementById("empty-dialogue");
+    const clueListEl       = document.getElementById("clue-list");
+    const accuseBtn        = document.getElementById("accuse-btn");
+    const accuseHint       = document.getElementById("accuse-hint");
+    const accuseModal      = document.getElementById("accuse-modal");
+    const accuseOptions    = document.getElementById("accuse-options");
+    const threadCount      = document.getElementById("thread-count");
+    const clearFilterBtn   = document.getElementById("clear-filter-btn");
+    const filterHint       = document.getElementById("filter-hint");
+    const mapFilterLabel   = document.getElementById("map-filter-label");
+
+    // ── MAP ZONE CLICK ──
+    document.querySelectorAll(".map-zone").forEach(zone => {
+      zone.addEventListener("click", () => {
+        const loc = zone.dataset.loc;
+        if (activeLocFilter === loc) {
+          clearFilter();
+        } else {
+          activeLocFilter = loc;
+          document.querySelectorAll(".map-zone").forEach(z => z.classList.remove("active-zone"));
+          zone.classList.add("active-zone");
+          clearFilterBtn.style.display = "block";
+          filterHint.textContent = `Showing suspects at: ${LOCATIONS[loc] || loc}`;
+          if (mapFilterLabel) mapFilterLabel.textContent = LOCATIONS[loc] || loc;
+          renderSuspectCards();
+        }
+      });
+    });
+
+    clearFilterBtn.addEventListener("click", clearFilter);
+
+    function clearFilter() {
+      activeLocFilter = null;
+      document.querySelectorAll(".map-zone").forEach(z => z.classList.remove("active-zone"));
+      clearFilterBtn.style.display = "none";
+      filterHint.textContent = "7 suspects across 6 locations";
+      if (mapFilterLabel) mapFilterLabel.textContent = "Click a location to filter suspects";
+      renderSuspectCards();
+    }
+
+    // ── RENDER SUSPECTS ──
+    function renderSuspectCards() {
+      suspectCardsEl.innerHTML = "";
+      for (const s of suspects) {
+        const inFilter = !activeLocFilter || s.location === activeLocFilter;
+        const card = document.createElement("div");
+        card.className = "suspect-card"
+          + (selectedSuspect === s.id ? " selected" : "")
+          + (!inFilter ? " dimmed" : "");
+        card.innerHTML = `
+          <div class="s-name">${s.name}</div>
+          <div class="s-role">${s.role}</div>
+          <div class="s-location">📍 ${LOCATIONS[s.location] || s.location}</div>
+          ${askedQuestions[s.id].size > 0
+            ? `<div class="s-badge">${askedQuestions[s.id].size}/${s.questions.length}</div>`
+            : ""}
+        `;
+        if (inFilter) {
+          card.addEventListener("click", () => selectSuspect(s.id));
+        }
+        suspectCardsEl.appendChild(card);
+      }
+    }
+
+    function selectSuspect(id) {
+      selectedSuspect = id;
+      suspectsQuestioned.add(id);
+      const s = suspects.find(x => x.id === id);
+
+      emptyDialogue.style.display = "none";
+      suspectHeader.style.display = "flex";
+      questionsEl.style.display   = "flex";
+
+      suspectPortrait.textContent = s.initial;
+      sName.textContent           = s.name;
+      sRole.textContent           = s.role;
+      sLocTag.textContent         = "📍 " + (LOCATIONS[s.location] || s.location);
+
+      renderSuspectCards();
+      renderDialogue(s);
+      renderQuestions(s);
+      updateAccuse();
+    }
+
+    function renderDialogue(s) {
+      dialogueBody.innerHTML = "";
+      const asked = askedQuestions[s.id];
+      if (asked.size === 0) {
+        dialogueBody.innerHTML = `<div style="font-family:'Playfair Display',serif;font-style:italic;color:var(--smoke);font-size:14px;text-align:center;padding:36px;">${s.name} waits. Ask your first question.</div>`;
+        return;
+      }
+      for (const idx of asked) {
+        const item = s.questions[idx];
+        const pl = document.createElement("div");
+        pl.className = "dialogue-line player";
+        pl.innerHTML = `<div class="bubble">${item.q}</div>`;
+        dialogueBody.appendChild(pl);
+
+        const flagCls = item.isThread
+          ? (item.threadKey === "a" ? " red-flag" : " thread-flag")
+          : "";
+        const sl = document.createElement("div");
+        sl.className = "dialogue-line";
+        sl.innerHTML = `<div class="bubble${flagCls}">${item.a}</div>`;
+        dialogueBody.appendChild(sl);
+      }
+      dialogueBody.scrollTop = dialogueBody.scrollHeight;
+    }
+
+    function renderQuestions(s) {
+      questionsEl.innerHTML = "";
+      s.questions.forEach((q, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "q-btn";
+        btn.textContent = q.q;
+        const was = askedQuestions[s.id].has(idx);
+        btn.disabled = was;
+        if (was) btn.textContent += "  ✓";
+        btn.addEventListener("click", () => askQuestion(s, idx));
+        questionsEl.appendChild(btn);
+      });
+    }
+
+    function askQuestion(s, idx) {
+      askedQuestions[s.id].add(idx);
+      const item = s.questions[idx];
+      if (item.isThread && item.threadKey) {
+        threadsFound.add(item.threadKey);
+        const pill = document.getElementById(`thread-${item.threadKey}`);
+        if (pill) pill.classList.add("found");
+      }
+      addClue(item.clue, !!item.isThread, item.threadKey === "a");
+      renderDialogue(s);
+      renderQuestions(s);
+      renderSuspectCards();
+      updateAccuse();
+    }
+
+    function addClue(text, isThread, isRedHerring) {
+      if (cluesFound.some(c => c.text === text)) return;
+      cluesFound.push({ text, thread: isThread, red: isRedHerring });
+      renderClues();
+    }
+
+    function renderClues() {
+      if (!cluesFound.length) {
+        clueListEl.innerHTML = '<div class="clue-empty">Clues will appear here as you question suspects.</div>';
+        return;
+      }
+      clueListEl.innerHTML = "";
+      cluesFound.forEach(c => {
+        const card = document.createElement("div");
+        let cls = "clue-card";
+        let stamp = "";
+        if (c.red) {
+          cls += " red-clue";
+          stamp = '<div class="clue-stamp stamp-red">THREAD A</div>';
+        } else if (c.thread) {
+          cls += " thread-clue";
+          stamp = '<div class="clue-stamp stamp-thread">THREAD</div>';
+        }
+        card.className = cls;
+        card.innerHTML = `${stamp}${c.text}`;
+        clueListEl.appendChild(card);
+      });
+      threadCount.textContent = `Threads: ${threadsFound.size} / 3`;
+    }
+
+    function updateAccuse() {
+      const allThreads = threadsFound.size >= KEY_THREADS;
+      const enough     = suspectsQuestioned.size >= MIN_SUSPECTS;
+      const can        = allThreads && enough;
+      accuseBtn.disabled = !can;
+      if (can) {
+        accuseHint.textContent = "All threads pulled. Name the killer.";
+      } else if (allThreads) {
+        accuseHint.textContent = `Question ${MIN_SUSPECTS - suspectsQuestioned.size} more suspect(s) first.`;
+      } else {
+        const rem = KEY_THREADS - threadsFound.size;
+        accuseHint.textContent = `${rem} thread${rem > 1 ? "s" : ""} still to pull.`;
+      }
+    }
+
+    // ── ACCUSATION ──
+    accuseBtn.addEventListener("click", () => {
+      accuseOptions.innerHTML = "";
+      suspects.forEach(s => {
+        const btn = document.createElement("button");
+        btn.className = "accuse-option";
+        btn.innerHTML = `<strong>${s.name}</strong> — ${s.role}`;
+        btn.addEventListener("click", () => makeAccusation(s.id));
+        accuseOptions.appendChild(btn);
+      });
+      accuseModal.classList.add("show");
+    });
+
+    document.getElementById("cancel-accuse").addEventListener("click", () => {
+      accuseModal.classList.remove("show");
+    });
+
+    function makeAccusation(id) {
+      accuseModal.classList.remove("show");
+      caseResolved = true;
+      const correct = id === KILLER_ID;
+      const accused = suspects.find(s => s.id === id);
+      const culprit = suspects.find(s => s.id === KILLER_ID);
+      showResult(correct, accused, culprit);
+    }
+
+    function showResult(correct, accused, culprit) {
+      gameScreen.classList.remove("active");
+      resultScreenWrap.classList.add("active");
+      const icon  = document.getElementById("result-icon");
+      const title = document.getElementById("result-title");
+      const text  = document.getElementById("result-text");
+
+      if (correct) {
+        icon.textContent  = "⚖️";
+        title.textContent = "Case Closed";
+          try{const s=JSON.parse(localStorage.getItem('unsolved-desk-solved')||'[]');if(!s.includes('westhaven-letters')){s.push('westhaven-letters');localStorage.setItem('unsolved-desk-solved',JSON.stringify(s));}}catch{}
+        text.innerHTML = `
+          <p style="margin-bottom:14px;">You were right. <strong>Dr. Philip Osei</strong> had falsified a patient's death certificate three years ago — a convenience for a family, a catastrophe waiting to happen. Roland had discovered the proof in old correspondence and told Philip that morning he was going to the police. Philip came to Westhaven that evening not as a visitor but as a man with nothing left to lose.</p>
+          <p style="margin-bottom:14px;">The barmaid saw him drive away from The Lamb at 10:30. Tom and Arthur both placed a tall man in a dark coat walking up the manor drive at 10:45 — on foot, because Philip had parked on the back lane to avoid being seen on the drive. Constance saw him in the garden. The cigarette end — Balkan Sobranie, black paper, gold tip — was there when she found the body.</p>
+          <p style="margin-bottom:14px;">The letters were recovered from Philip's car two days later. They were more than enough. Roland had been holding them for months, waiting to decide what to do. He had finally decided. Philip made sure that decision never reached anyone else.</p>
+          <p>Sylvia Crane's misconduct case was quietly dropped. Arthur's updated will was never signed. The manor passed to Felix. The barmaid's testimony was the first domino.</p>
+        `;
+      } else if (accused.id === "sylvia") {
+        icon.textContent  = "✗";
+        title.textContent = "Wrong Call — Thread A Was the Trap";
+        text.innerHTML = `
+          <p style="margin-bottom:14px;">You named <strong>Sylvia Crane</strong> — and Thread A almost held. Her car on the lane at 10:55. Her motive (Roland's testimony). Her lie about leaving. It was designed to look like guilt.</p>
+          <p style="margin-bottom:14px;">But Constance's description of the garden figure breaks it: tall, dark coat. Sylvia is 5'2". She returned to the gate, sat in her car for ten minutes, and left without entering. A witness who almost committed a crime is not the same as the person who did.</p>
+          <p style="margin-bottom:14px;">The killer was <strong>Dr. Philip Osei</strong>. He left The Lamb at 10:30, parked on the back lane, walked up the drive on foot, let himself in with the key Roland had given him as his GP, killed Roland, took the letters, and drove away before Constance found the body.</p>
+          <p>The cigarette end, the barmaid, the tall figure in the garden, and the dark car Sylvia saw leaving as she arrived — those were the four corners of Thread C. They all pointed the same way.</p>
+        `;
+      } else {
+        icon.textContent  = "✗";
+        title.textContent = "Wrong Call";
+        text.innerHTML = `
+          <p style="margin-bottom:14px;">You named <strong>${accused.name}</strong> — but the threads don't converge there. The case requires following Thread C all the way through: the barmaid placing Philip leaving at 10:30, Tom and Arthur both placing a tall figure on foot at the drive, the Sobranie cigarette end, and Arthur's account of the urgent will update Roland requested.</p>
+          <p style="margin-bottom:14px;">The killer was <strong>Dr. Philip Osei</strong>. The letters in Roland's safe proved Philip had falsified a patient's death certificate. Roland had decided that morning to go to the police. Philip came that evening, killed him, and took the letters. He left them in his car — a 45-minute drive away — and nearly got away with it.</p>
+          <p>Use the location map to trace each person's movements. The manor drive, the lane, and the garden tell the story if you put them in order.</p>
+        `;
+      }
+    }
+
+    // ── SCREEN FLOW ──
+    document.getElementById("begin-btn").addEventListener("click", () => {
+      briefingScreen.classList.remove("active");
+      gameScreen.classList.add("active");
+      renderSuspectCards();
+      renderClues();
+      updateAccuse();
+    });
+
+    document.getElementById("play-again-btn").addEventListener("click", () => {
+      selectedSuspect    = null;
+      askedQuestions     = {};
+      suspects.forEach(s => { askedQuestions[s.id] = new Set(); });
+      cluesFound         = [];
+      suspectsQuestioned = new Set();
+      threadsFound       = new Set();
+      activeLocFilter    = null;
+      caseResolved       = false;
+
+      ["a","b","c"].forEach(k => {
+        const pill = document.getElementById(`thread-${k}`);
+        if (pill) pill.classList.remove("found");
+      });
+      document.querySelectorAll(".map-zone").forEach(z => z.classList.remove("active-zone"));
+      clearFilterBtn.style.display = "none";
+      filterHint.textContent = "7 suspects across 6 locations";
+
+      resultScreenWrap.classList.remove("active");
+      briefingScreen.classList.add("active");
+
+      emptyDialogue.style.display = "flex";
+      suspectHeader.style.display = "none";
+      questionsEl.style.display   = "none";
+      dialogueBody.innerHTML      = "";
+      dialogueBody.appendChild(emptyDialogue);
+      renderClues();
+      updateAccuse();
+    });
+    </script>
+  </body>
+</html>
